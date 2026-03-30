@@ -5,558 +5,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GlucoMeal — Planer dla Diabetyków T1</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
   <style>
     :root {
-      --bg:        #f7f4ef;
-      --surface:   #ffffff;
-      --border:    #e8e2d9;
-      --text:      #1a1714;
-      --muted:     #7a6f66;
-      --accent:    #c0533a;
-      --accent-lt: #f5ebe7;
-      --green:     #3a7c5a;
-      --green-lt:  #e6f2ec;
-      --radius:    14px;
-      --shadow:    0 2px 16px rgba(0,0,0,0.07);
+      --bg:#f7f4ef; --surface:#ffffff; --border:#e8e2d9; --text:#1a1714;
+      --muted:#7a6f66; --accent:#c0533a; --accent-lt:#f5ebe7;
+      --green:#3a7c5a; --green-lt:#e6f2ec; --radius:14px; --shadow:0 2px 16px rgba(0,0,0,0.07);
     }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      font-size: 15px;
-      line-height: 1.6;
-    }
-
-    /* ── LAYOUT ── */
-    .app { display: none; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    /* ── AUTH PAGE ── */
-    #auth-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .auth-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 44px 40px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: var(--shadow);
-    }
-
-    .brand {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .brand-icon {
-      width: 52px;
-      height: 52px;
-      background: var(--accent);
-      border-radius: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-
-    .brand h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 26px;
-      color: var(--text);
-      letter-spacing: -0.3px;
-    }
-
-    .brand p {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .auth-tabs {
-      display: flex;
-      background: var(--bg);
-      border-radius: 10px;
-      padding: 3px;
-      margin-bottom: 28px;
-    }
-
-    .auth-tab {
-      flex: 1;
-      padding: 9px;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .auth-tab.active {
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 1px 6px rgba(0,0,0,0.1);
-    }
-
-    .field { margin-bottom: 16px; }
-
-    .field label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .field input {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 15px;
-      color: var(--text);
-      background: var(--bg);
-      transition: border-color .2s;
-      outline: none;
-    }
-
-    .field input:focus { border-color: var(--accent); background: var(--surface); }
-
-    .btn {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .btn-primary:hover { background: #a84530; }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
-
-    .btn-secondary {
-      background: var(--bg);
-      color: var(--text);
-      border: 1.5px solid var(--border);
-    }
-
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-
-    .msg {
-      padding: 11px 14px;
-      border-radius: 9px;
-      font-size: 13.5px;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .msg.error { background: #fdf0ed; color: var(--accent); border: 1px solid #f5cec6; display: block; }
-    .msg.success { background: var(--green-lt); color: var(--green); border: 1px solid #b8deca; display: block; }
-
-    /* ── MAIN APP ── */
-    .app {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0 16px 40px;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 0 8px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 28px;
-    }
-
-    .header-brand {
-      font-family: 'DM Serif Display', serif;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header-brand span {
-      background: var(--accent);
-      color: #fff;
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-
-    nav {
-      display: flex;
-      gap: 4px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 3px;
-      margin-bottom: 28px;
-    }
-
-    .nav-btn {
-      flex: 1;
-      padding: 9px 8px;
-      border: none;
-      background: transparent;
-      border-radius: 7px;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-    }
-
-    .nav-btn.active {
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 1px 5px rgba(0,0,0,0.09);
-    }
-
-    .logout-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: inherit;
-      font-size: 13px;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 7px;
-      transition: all .2s;
-    }
-
-    .logout-btn:hover { color: var(--accent); background: var(--accent-lt); }
-
-    /* ── CARDS ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 19px;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card-title .icon {
-      font-size: 20px;
-    }
-
-    .card-desc {
-      color: var(--muted);
-      font-size: 13.5px;
-      margin-bottom: 22px;
-    }
-
-    /* ── PROFILE GRID ── */
-    .profile-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    @media (max-width: 480px) {
-      .profile-grid { grid-template-columns: 1fr; }
-      .auth-card { padding: 32px 24px; }
-    }
-
-    /* ── INLINE FIELD ── */
-    .inline-field { display: flex; flex-direction: column; gap: 5px; }
-
-    .inline-field label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .inline-field input, .inline-field select {
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 9px;
-      font-family: inherit;
-      font-size: 15px;
-      color: var(--text);
-      background: var(--bg);
-      outline: none;
-      transition: border-color .2s;
-    }
-
-    .inline-field input:focus,
-    .inline-field select:focus { border-color: var(--accent); background: #fff; }
-
-    .inline-field .unit {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .save-row {
-      margin-top: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .save-row .btn { width: auto; padding: 11px 24px; }
-
-    .save-status {
-      font-size: 13px;
-      color: var(--green);
-      opacity: 0;
-      transition: opacity .3s;
-    }
-
-    .save-status.visible { opacity: 1; }
-
-    /* ── STATS ROW ── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .stat-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .stat-box .stat-val {
-      font-family: 'DM Serif Display', serif;
-      font-size: 24px;
-      color: var(--text);
-    }
-
-    .stat-box .stat-lbl {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
-    }
-
-    .stat-box .stat-empty {
-      font-size: 20px;
-      color: var(--border);
-    }
-
-    /* ── CALCULATOR ── */
-    .calc-input-row {
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-
-    .calc-input-row .inline-field { flex: 1; min-width: 120px; }
-
-    .calc-result {
-      margin-top: 22px;
-      padding: 20px 22px;
-      background: var(--accent-lt);
-      border: 1.5px solid #e8c4bb;
-      border-radius: 12px;
-      display: none;
-    }
-
-    .calc-result.visible { display: block; }
-
-    .calc-result .result-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-
-    .calc-result .result-dose {
-      font-family: 'DM Serif Display', serif;
-      font-size: 38px;
-      color: var(--accent);
-      line-height: 1;
-    }
-
-    .calc-result .result-dose span {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--muted);
-      margin-left: 6px;
-    }
-
-    .calc-result .result-detail {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #e8c4bb;
-    }
-
-    .disclaimer {
-      margin-top: 16px;
-      padding: 12px 14px;
-      background: #fffbf0;
-      border: 1px solid #f0dfa0;
-      border-radius: 9px;
-      font-size: 12.5px;
-      color: #7a6a20;
-      line-height: 1.5;
-    }
-
-    .disclaimer strong { display: block; margin-bottom: 2px; }
-
-    /* ── INFO TAB ── */
-    .info-section { margin-bottom: 24px; }
-
-    .info-section h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 17px;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-
-    .info-section p {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-bottom: 10px;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13.5px;
-      margin-top: 10px;
-    }
-
-    .info-table th {
-      background: var(--bg);
-      padding: 9px 12px;
-      text-align: left;
-      font-weight: 600;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .info-table td {
-      padding: 9px 12px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .info-table tr:last-child td { border-bottom: none; }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .badge-green { background: var(--green-lt); color: var(--green); }
-    .badge-yellow { background: #fffbf0; color: #7a6a20; }
-    .badge-red { background: var(--accent-lt); color: var(--accent); }
-
-    /* ── BMI ── */
-    .bmi-bar-wrap {
-      margin-top: 14px;
-    }
-
-    .bmi-bar {
-      height: 8px;
-      border-radius: 4px;
-      background: linear-gradient(to right, #6ab4f5, #5cc97a, #f5c842, #f58a42, #e84e2a);
-      position: relative;
-      margin-bottom: 6px;
-    }
-
-    .bmi-needle {
-      position: absolute;
-      top: -4px;
-      width: 16px;
-      height: 16px;
-      background: var(--text);
-      border: 2px solid white;
-      border-radius: 50%;
-      transform: translateX(-50%);
-      transition: left .5s ease;
-    }
-
-    .bmi-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .bmi-value {
-      font-family: 'DM Serif Display', serif;
-      font-size: 28px;
-      color: var(--text);
-      margin-top: 10px;
-    }
-
-    .bmi-category {
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 2px;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+    .app{display:none} .screen{display:none} .screen.active{display:block}
+
+    /* AUTH */
+    #auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:var(--shadow)}
+    .brand{text-align:center;margin-bottom:32px}
+    .brand-icon{width:52px;height:52px;background:var(--accent);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px}
+    .brand h1{font-family:'DM Serif Display',serif;font-size:26px;letter-spacing:-.3px}
+    .brand p{color:var(--muted);font-size:13px;margin-top:4px}
+    .auth-tabs{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:28px}
+    .auth-tab{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:inherit;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+    .auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.1)}
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+    .field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:15px;color:var(--text);background:var(--bg);transition:border-color .2s;outline:none}
+    .field input:focus{border-color:var(--accent);background:var(--surface)}
+    .btn{padding:13px;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;width:100%}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-primary:hover{background:#a84530}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border)}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-sm{padding:8px 18px;font-size:13px;width:auto;border-radius:8px}
+    .msg{padding:11px 14px;border-radius:9px;font-size:13.5px;margin-bottom:16px;display:none}
+    .msg.error{background:#fdf0ed;color:var(--accent);border:1px solid #f5cec6;display:block}
+    .msg.success{background:var(--green-lt);color:var(--green);border:1px solid #b8deca;display:block}
+
+    /* APP SHELL */
+    .app{max-width:720px;margin:0 auto;padding:0 16px 60px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px;border-bottom:1px solid var(--border);margin-bottom:22px}
+    .header-brand{font-family:'DM Serif Display',serif;font-size:20px;display:flex;align-items:center;gap:10px}
+    .header-brand span{background:var(--accent);color:#fff;width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+    .logout-btn{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;padding:6px 10px;border-radius:7px;transition:all .2s}
+    .logout-btn:hover{color:var(--accent);background:var(--accent-lt)}
+    nav{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:24px;overflow-x:auto}
+    .nav-btn{flex:1;padding:8px 6px;border:none;background:transparent;border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;min-width:55px}
+    .nav-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.09)}
+
+    /* CARDS */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:var(--shadow)}
+    .card-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:5px;display:flex;align-items:center;gap:9px}
+    .card-desc{color:var(--muted);font-size:13px;margin-bottom:18px}
+
+    /* INLINE FIELDS */
+    .inline-field{display:flex;flex-direction:column;gap:5px}
+    .inline-field label{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .inline-field input,.inline-field select{padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:15px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s}
+    .inline-field input:focus,.inline-field select:focus{border-color:var(--accent);background:#fff}
+    .unit{font-size:11px;color:var(--muted)}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row .inline-field{flex:1;min-width:120px}
+    .save-row{margin-top:18px;display:flex;align-items:center;gap:12px}
+    .save-status{font-size:13px;color:var(--green);opacity:0;transition:opacity .3s}
+    .save-status.visible{opacity:1}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+    .stat-val{font-family:'DM Serif Display',serif;font-size:22px}
+    .stat-lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+    /* CALC */
+    .calc-result{margin-top:18px;padding:18px 20px;background:var(--accent-lt);border:1.5px solid #e8c4bb;border-radius:12px;display:none}
+    .calc-result.visible{display:block}
+    .result-label{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+    .result-dose{font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent);line-height:1}
+    .result-dose span{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:var(--muted);margin-left:5px}
+    .result-detail{font-size:12.5px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid #e8c4bb}
+    .disclaimer{margin-top:14px;padding:11px 13px;background:#fffbf0;border:1px solid #f0dfa0;border-radius:9px;font-size:12px;color:#7a6a20;line-height:1.5}
+    .disclaimer strong{display:block;margin-bottom:2px}
+
+    /* BMI */
+    .bmi-bar{height:8px;border-radius:4px;background:linear-gradient(to right,#6ab4f5,#5cc97a,#f5c842,#f58a42,#e84e2a);position:relative;margin:12px 0 6px}
+    .bmi-needle{position:absolute;top:-4px;width:16px;height:16px;background:var(--text);border:2px solid white;border-radius:50%;transform:translateX(-50%);transition:left .5s ease}
+    .bmi-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)}
+    .bmi-value{font-family:'DM Serif Display',serif;font-size:26px;margin-top:8px}
+    .bmi-category{font-size:13px;font-weight:600;margin-top:2px}
+
+    /* TABLES */
+    .info-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+    .info-table th{background:var(--bg);padding:8px 11px;text-align:left;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+    .info-table td{padding:8px 11px;border-bottom:1px solid var(--border)}
+    .info-table tr:last-child td{border-bottom:none}
+    .badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600}
+    .badge-green{background:var(--green-lt);color:var(--green)}
+    .badge-yellow{background:#fffbf0;color:#7a6a20}
+    .badge-red{background:var(--accent-lt);color:var(--accent)}
+
+    /* PLAN */
+    .plan-view-tabs{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:20px}
+    .plan-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+    .plan-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .day-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .day-nav-arrow{background:none;border:1.5px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--muted);transition:all .2s}
+    .day-nav-arrow:hover{border-color:var(--accent);color:var(--accent)}
+    .day-nav-label{font-family:'DM Serif Display',serif;font-size:18px}
+    .meal-slot{border:1px solid var(--border);border-radius:11px;margin-bottom:12px;overflow:hidden}
+    .meal-slot-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+    .meal-slot-title{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:7px}
+    .meal-slot-carbs{font-size:12px;color:var(--muted)}
+    .meal-slot-body{padding:10px 16px;background:var(--surface)}
+    .meal-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+    .meal-item:last-child{border-bottom:none}
+    .meal-item-name{flex:1}
+    .meal-item-carbs{color:var(--muted);font-size:12.5px;margin:0 12px;white-space:nowrap}
+    .meal-item-dose{color:var(--accent);font-weight:600;font-size:12.5px;white-space:nowrap;margin-right:10px}
+    .meal-item-del{background:none;border:none;color:var(--border);cursor:pointer;font-size:16px;padding:2px 5px;border-radius:5px;transition:all .2s}
+    .meal-item-del:hover{color:var(--accent);background:var(--accent-lt)}
+    .add-meal-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:8px 0 2px;transition:opacity .2s}
+    .add-meal-btn:hover{opacity:.7}
+
+    /* WEEKLY */
+    .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .week-label{font-family:'DM Serif Display',serif;font-size:17px}
+    .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .week-day-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;min-width:0}
+    .week-day-head{background:var(--bg);padding:7px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.3px}
+    .week-day-head.today{background:var(--accent);color:#fff}
+    .week-day-body{padding:6px 4px}
+    .week-meal-dot{font-size:10px;color:var(--muted);padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .week-total{font-size:10px;font-weight:600;color:var(--accent);padding-top:4px;border-top:1px solid var(--border);margin-top:3px;text-align:center}
+    .week-add{display:block;width:100%;background:none;border:none;color:var(--border);font-size:16px;cursor:pointer;padding:4px 0;transition:color .2s}
+    .week-add:hover{color:var(--accent)}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:28px 24px 36px;width:100%;max-width:500px;transform:translateY(20px);transition:transform .25s}
+    .modal-overlay.open .modal{transform:translateY(0)}
+    .modal-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:18px}
+    .modal-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .modal-row .inline-field{flex:1;min-width:120px}
+    .modal-actions{display:flex;gap:10px;margin-top:18px}
+    .modal-actions .btn{flex:1}
+
+    /* FOOD DB */
+    .food-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+    .food-tab{padding:5px 12px;border:1.5px solid var(--border);border-radius:20px;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+    .food-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .food-search{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;background:var(--bg);outline:none;margin-bottom:12px;transition:border-color .2s}
+    .food-search:focus{border-color:var(--accent);background:#fff}
+    .food-list{max-height:280px;overflow-y:auto}
+    .food-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;cursor:pointer;transition:background .15s}
+    .food-item:hover{background:var(--bg)}
+    .food-item-name{font-size:14px}
+    .food-item-detail{font-size:12px;color:var(--muted)}
+    .food-item-carbs{font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap;margin-left:10px}
+
+    /* DIARY */
+    .diary-entry{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--surface)}
+    .diary-entry-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+    .diary-entry-title{font-weight:600;font-size:14px}
+    .diary-entry-meta{font-size:12px;color:var(--muted)}
+    .diary-stats{display:flex;gap:12px;margin-top:6px}
+    .diary-stat{font-size:12px;color:var(--muted)}
+    .diary-stat strong{color:var(--text)}
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+    @media(max-width:520px){
+      .profile-grid{grid-template-columns:1fr}
+      .auth-card{padding:30px 20px}
+      .week-grid{grid-template-columns:repeat(4,1fr)}
     }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════ AUTH ════════════════════════════════ -->
+<!-- AUTH -->
 <div id="auth-page">
   <div class="auth-card">
     <div class="brand">
@@ -564,446 +188,609 @@
       <h1>GlucoMeal</h1>
       <p>Planer posiłków dla diabetyków T1</p>
     </div>
-
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('login')">Logowanie</button>
       <button class="auth-tab" onclick="switchTab('register')">Rejestracja</button>
     </div>
-
     <div id="auth-msg" class="msg"></div>
-
-    <!-- LOGIN -->
     <div id="login-form">
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="login-email" placeholder="twoj@email.com" />
-      </div>
-      <div class="field">
-        <label>Hasło</label>
-        <input type="password" id="login-pass" placeholder="••••••••" />
-      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="twoj@email.com"/></div>
+      <div class="field"><label>Hasło</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
       <button class="btn btn-primary" onclick="login()" id="login-btn">Zaloguj się</button>
     </div>
-
-    <!-- REGISTER -->
     <div id="register-form" style="display:none">
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="reg-email" placeholder="twoj@email.com" />
-      </div>
-      <div class="field">
-        <label>Hasło (min. 6 znaków)</label>
-        <input type="password" id="reg-pass" placeholder="••••••••" />
-      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="twoj@email.com"/></div>
+      <div class="field"><label>Hasło (min. 6 znaków)</label><input type="password" id="reg-pass" placeholder="••••••••"/></div>
       <button class="btn btn-primary" onclick="register()" id="reg-btn">Utwórz konto</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════ APP ════════════════════════════════ -->
+<!-- APP -->
 <div class="app" id="main-app">
-
   <header>
-    <div class="header-brand">
-      <span>🩸</span> GlucoMeal
-    </div>
+    <div class="header-brand"><span>🩸</span> GlucoMeal</div>
     <button class="logout-btn" onclick="logout()">Wyloguj →</button>
   </header>
-
   <nav>
-    <button class="nav-btn active" onclick="showScreen('dashboard')">Pulpit</button>
-    <button class="nav-btn" onclick="showScreen('calculator')">Kalkulator</button>
-    <button class="nav-btn" onclick="showScreen('profile')">Profil</button>
-    <button class="nav-btn" onclick="showScreen('info')">Informacje</button>
+    <button class="nav-btn active" onclick="showScreen('dashboard',this)">Pulpit</button>
+    <button class="nav-btn" onclick="showScreen('plan',this)">Plan</button>
+    <button class="nav-btn" onclick="showScreen('diary',this)">Dziennik</button>
+    <button class="nav-btn" onclick="showScreen('calculator',this)">Kalkulator</button>
+    <button class="nav-btn" onclick="showScreen('foods',this)">Produkty</button>
+    <button class="nav-btn" onclick="showScreen('profile',this)">Profil</button>
+    <button class="nav-btn" onclick="showScreen('info',this)">Info</button>
   </nav>
 
-  <!-- ── DASHBOARD ── -->
+  <!-- DASHBOARD -->
   <div class="screen active" id="screen-dashboard">
-
     <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-val" id="dash-weight">—</div>
-        <div class="stat-lbl">Waga (kg)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="dash-a1c">—</div>
-        <div class="stat-lbl">HbA1c (%)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="dash-icr">—</div>
-        <div class="stat-lbl">ICR (g/j)</div>
-      </div>
+      <div class="stat-box"><div class="stat-val" id="dash-weight">—</div><div class="stat-lbl">Waga (kg)</div></div>
+      <div class="stat-box"><div class="stat-val" id="dash-a1c">—</div><div class="stat-lbl">HbA1c (%)</div></div>
+      <div class="stat-box"><div class="stat-val" id="dash-icr">—</div><div class="stat-lbl">ICR (g/j)</div></div>
     </div>
-
     <div class="card" id="bmi-card" style="display:none">
-      <div class="card-title"><span class="icon">📊</span> BMI</div>
+      <div class="card-title">📊 BMI</div>
       <div class="bmi-value" id="bmi-val">—</div>
       <div class="bmi-category" id="bmi-cat"></div>
-      <div class="bmi-bar-wrap">
-        <div class="bmi-bar">
-          <div class="bmi-needle" id="bmi-needle" style="left:0%"></div>
-        </div>
-        <div class="bmi-labels">
-          <span>Niedowaga</span>
-          <span>Norma</span>
-          <span>Nadwaga</span>
-          <span>Otyłość</span>
-        </div>
-      </div>
+      <div class="bmi-bar"><div class="bmi-needle" id="bmi-needle" style="left:0%"></div></div>
+      <div class="bmi-labels"><span>Niedowaga</span><span>Norma</span><span>Nadwaga</span><span>Otyłość</span></div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">💡</span> Szybki kalkulator</div>
+      <div class="card-title">💡 Szybki kalkulator</div>
       <div class="card-desc">Ile węglowodanów masz w posiłku?</div>
-      <div class="calc-input-row">
-        <div class="inline-field">
-          <label>Węglowodany <span class="unit">(g)</span></label>
-          <input type="number" id="quick-carbs" placeholder="np. 60" min="0" oninput="quickCalc()" />
-        </div>
-      </div>
+      <div class="row"><div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="quick-carbs" placeholder="np. 60" min="0" oninput="quickCalc()"/></div></div>
       <div class="calc-result" id="quick-result">
         <div class="result-label">Sugerowana dawka</div>
         <div class="result-dose" id="quick-dose">0<span>jednostek</span></div>
         <div class="result-detail" id="quick-detail"></div>
       </div>
-      <div class="disclaimer">
-        <strong>⚠️ Ważna informacja</strong>
-        Aplikacja służy wyłącznie jako pomoc w obliczeniach. Zawsze konsultuj dawkowanie insuliny z lekarzem lub diabetologiem. Nie zastępuje to porady medycznej.
-      </div>
+      <div class="disclaimer"><strong>⚠️ Ważna informacja</strong>Aplikacja służy wyłącznie jako pomoc w obliczeniach. Zawsze konsultuj dawkowanie z lekarzem.</div>
     </div>
-
+    <div class="card">
+      <div class="card-title">📅 Dzisiaj</div>
+      <div id="today-summary" style="color:var(--muted);font-size:13.5px">Brak wpisów na dziś.</div>
+    </div>
   </div>
 
-  <!-- ── CALCULATOR ── -->
+  <!-- PLAN -->
+  <div class="screen" id="screen-plan">
+    <div class="plan-view-tabs">
+      <button class="plan-tab active" onclick="switchPlanView('day',this)">Widok dzienny</button>
+      <button class="plan-tab" onclick="switchPlanView('week',this)">Widok tygodniowy</button>
+    </div>
+    <div id="plan-daily">
+      <div class="day-nav">
+        <button class="day-nav-arrow" onclick="changeDay(-1)">←</button>
+        <div class="day-nav-label" id="day-label"></div>
+        <button class="day-nav-arrow" onclick="changeDay(1)">→</button>
+      </div>
+      <div id="daily-slots"></div>
+    </div>
+    <div id="plan-weekly" style="display:none">
+      <div class="week-nav">
+        <button class="day-nav-arrow" onclick="changeWeek(-1)">←</button>
+        <div class="week-label" id="week-label"></div>
+        <button class="day-nav-arrow" onclick="changeWeek(1)">→</button>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+    </div>
+  </div>
+
+  <!-- DZIENNIK -->
+  <div class="screen" id="screen-diary">
+    <div class="card">
+      <div class="card-title">📓 Dziennik posiłków</div>
+      <div class="card-desc">Historia Twoich wpisów</div>
+      <div id="diary-list"><div style="color:var(--muted);font-size:13.5px">Ładowanie…</div></div>
+    </div>
+  </div>
+
+  <!-- KALKULATOR -->
   <div class="screen" id="screen-calculator">
     <div class="card">
-      <div class="card-title"><span class="icon">🧮</span> Kalkulator bolusu</div>
-      <div class="card-desc">Wpisz ile węglowodanów zawiera Twój posiłek, a kalkulator obliczy sugerowaną dawkę insuliny na podstawie Twojego ICR.</div>
-
-      <div class="calc-input-row" style="margin-bottom: 14px;">
-        <div class="inline-field">
-          <label>Węglowodany <span class="unit">(g)</span></label>
-          <input type="number" id="calc-carbs" placeholder="np. 60" min="0" oninput="fullCalc()" />
-        </div>
-        <div class="inline-field">
-          <label>Twój ICR <span class="unit">(g węgl./j)</span></label>
-          <input type="number" id="calc-icr-override" placeholder="z profilu" min="1" oninput="fullCalc()" />
-        </div>
+      <div class="card-title">🧮 Kalkulator bolusu</div>
+      <div class="card-desc">Oblicz dawkę insuliny na podstawie węglowodanów i swojego ICR.</div>
+      <div class="row" style="margin-bottom:12px">
+        <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="calc-carbs" placeholder="np. 60" min="0" oninput="fullCalc()"/></div>
+        <div class="inline-field"><label>ICR <span class="unit">(g/j)</span></label><input type="number" id="calc-icr-override" placeholder="z profilu" min="1" oninput="fullCalc()"/></div>
       </div>
-
       <div class="calc-result" id="full-result">
         <div class="result-label">Sugerowana dawka insuliny</div>
         <div class="result-dose" id="full-dose">0<span>jednostek</span></div>
         <div class="result-detail" id="full-detail"></div>
       </div>
-
-      <div class="disclaimer" style="margin-top: 16px;">
-        <strong>⚠️ Ważna informacja</strong>
-        Podany wynik to jedynie wynik działania matematycznego (węglowodany ÷ ICR). Na rzeczywistą dawkę insuliny wpływa wiele czynników: aktywność fizyczna, aktualny poziom glikemii, typ posiłku i inne. Zawsze stosuj dawkowanie zalecone przez lekarza.
-      </div>
+      <div class="disclaimer" style="margin-top:14px"><strong>⚠️ Ważna informacja</strong>Wynik to działanie matematyczne. Zawsze stosuj dawkowanie zalecone przez lekarza.</div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">📖</span> Jak używać kalkulatora?</div>
-      <p style="font-size:14px; color:var(--muted); line-height:1.7;">
-        <strong style="color:var(--text);">ICR (Insulin-to-Carb Ratio)</strong> — stosunek węglowodanów do jednostki insuliny. Np. ICR = 10 oznacza, że 1 jednostka insuliny pokrywa 10g węglowodanów.<br><br>
-        <strong style="color:var(--text);">Wzór:</strong> Dawka = Węglowodany ÷ ICR<br><br>
-        Twoje ICR ustalasz razem z diabetologiem i wpisujesz w zakładce <em>Profil</em>.
-      </p>
+      <div class="card-title">📖 Jak używać?</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7"><strong style="color:var(--text)">ICR</strong> — liczba gramów węglowodanów na 1 jednostkę insuliny. Wzór: <strong style="color:var(--text)">Dawka = Węglowodany ÷ ICR</strong>. Swoje ICR ustalasz z diabetologiem i wpisujesz w Profilu.</p>
     </div>
   </div>
 
-  <!-- ── PROFILE ── -->
-  <div class="screen" id="screen-profile">
+  <!-- PRODUKTY -->
+  <div class="screen" id="screen-foods">
     <div class="card">
-      <div class="card-title"><span class="icon">👤</span> Dane osobowe</div>
-      <div class="card-desc">Te dane pomagają śledzić postępy i kalkulować dawki.</div>
-
-      <div class="profile-grid">
-        <div class="inline-field">
-          <label>Waga <span class="unit">(kg)</span></label>
-          <input type="number" id="p-weight" placeholder="np. 70" min="20" max="300" step="0.1" />
-        </div>
-        <div class="inline-field">
-          <label>Wzrost <span class="unit">(cm)</span></label>
-          <input type="number" id="p-height" placeholder="np. 170" min="100" max="250" />
-        </div>
-        <div class="inline-field">
-          <label>Ostatni HbA1c <span class="unit">(%)</span></label>
-          <input type="number" id="p-a1c" placeholder="np. 7.2" min="4" max="15" step="0.1" />
-        </div>
-        <div class="inline-field">
-          <label>ICR — Twój stosunek <span class="unit">(g/j)</span></label>
-          <input type="number" id="p-icr" placeholder="np. 10" min="1" max="50" />
+      <div class="card-title">🥦 Baza produktów</div>
+      <div class="card-desc">Kliknij produkt, żeby dodać go do planu na wybrany dzień.</div>
+      <div class="food-tabs" id="food-category-tabs"></div>
+      <input class="food-search" type="text" placeholder="Szukaj produktu…" oninput="filterFoods(this.value)"/>
+      <div class="food-list" id="food-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">➕ Dodaj własny produkt</div>
+      <div class="row">
+        <div class="inline-field"><label>Nazwa</label><input type="text" id="custom-food-name" placeholder="np. Chleb razowy"/></div>
+        <div class="inline-field"><label>Węglowodany <span class="unit">(g/100g)</span></label><input type="number" id="custom-food-carbs" placeholder="np. 42"/></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="inline-field"><label>Kategoria</label>
+          <select id="custom-food-cat">
+            <option>Pieczywo</option><option>Nabiał</option><option>Mięso i ryby</option>
+            <option>Warzywa</option><option>Owoce</option><option>Kasze i ryże</option>
+            <option>Makarony</option><option>Przekąski</option><option>Inne</option>
+          </select>
         </div>
       </div>
-
       <div class="save-row">
-        <button class="btn btn-primary" onclick="saveProfile()">Zapisz profil</button>
+        <button class="btn btn-primary btn-sm" onclick="saveCustomFood()">Zapisz produkt</button>
+        <div class="save-status" id="food-save-status">✓ Dodano</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFIL -->
+  <div class="screen" id="screen-profile">
+    <div class="card">
+      <div class="card-title">👤 Dane osobowe</div>
+      <div class="card-desc">Dane do kalkulacji BMI i dawek insuliny.</div>
+      <div class="profile-grid">
+        <div class="inline-field"><label>Waga <span class="unit">(kg)</span></label><input type="number" id="p-weight" placeholder="np. 70" min="20" max="300" step="0.1"/></div>
+        <div class="inline-field"><label>Wzrost <span class="unit">(cm)</span></label><input type="number" id="p-height" placeholder="np. 170" min="100" max="250"/></div>
+        <div class="inline-field"><label>Ostatni HbA1c <span class="unit">(%)</span></label><input type="number" id="p-a1c" placeholder="np. 7.2" min="4" max="15" step="0.1"/></div>
+        <div class="inline-field"><label>ICR <span class="unit">(g/j)</span></label><input type="number" id="p-icr" placeholder="np. 10" min="1" max="50"/></div>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-primary btn-sm" onclick="saveProfile()">Zapisz profil</button>
         <div class="save-status" id="save-status">✓ Zapisano</div>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">🔑</span> ICR — co to jest?</div>
-      <p style="font-size:14px; color:var(--muted); line-height:1.7;">
-        ICR (ang. <em>Insulin-to-Carbohydrate Ratio</em>) to liczba gramów węglowodanów pokrywanych przez jedną jednostkę insuliny. Jest indywidualny i ustalany z diabetologiem — <strong style="color:var(--text);">wpisz tutaj swój ICR zalecony przez lekarza.</strong>
-      </p>
+      <div class="card-title">🔑 ICR — co to jest?</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7">ICR (<em>Insulin-to-Carbohydrate Ratio</em>) to liczba gramów węglowodanów pokrywanych przez 1 jednostkę insuliny. Jest indywidualny i ustalany z diabetologiem.</p>
     </div>
   </div>
 
-  <!-- ── INFO ── -->
+  <!-- INFO -->
   <div class="screen" id="screen-info">
     <div class="card">
-      <div class="card-title"><span class="icon">📚</span> Poziomy HbA1c</div>
+      <div class="card-title">📚 Poziomy HbA1c</div>
       <div class="card-desc">Zalecenia Polskiego Towarzystwa Diabetologicznego (PTD)</div>
       <table class="info-table">
-        <thead>
-          <tr><th>HbA1c</th><th>Ocena</th><th>Interpretacja</th></tr>
-        </thead>
+        <thead><tr><th>HbA1c</th><th>Ocena</th><th>Interpretacja</th></tr></thead>
         <tbody>
           <tr><td>&lt; 6,5%</td><td><span class="badge badge-green">Cel PTD</span></td><td>Dla większości dorosłych T1</td></tr>
-          <tr><td>6,5 – 7,0%</td><td><span class="badge badge-yellow">Akceptowalne</span></td><td>Przy częstych hipoglikemiach</td></tr>
-          <tr><td>7,0 – 8,0%</td><td><span class="badge badge-yellow">Do poprawy</span></td><td>Zwiększone ryzyko powikłań</td></tr>
+          <tr><td>6,5–7,0%</td><td><span class="badge badge-yellow">Akceptowalne</span></td><td>Przy częstych hipoglikemiach</td></tr>
+          <tr><td>7,0–8,0%</td><td><span class="badge badge-yellow">Do poprawy</span></td><td>Zwiększone ryzyko powikłań</td></tr>
           <tr><td>&gt; 8,0%</td><td><span class="badge badge-red">Wysoki</span></td><td>Konieczna konsultacja z lekarzem</td></tr>
         </tbody>
       </table>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">🥗</span> Indeks glikemiczny (IG)</div>
-      <div class="card-desc">Jak różne produkty wpływają na wzrost glikemii</div>
+      <div class="card-title">🥗 Indeks glikemiczny (IG)</div>
       <table class="info-table">
-        <thead>
-          <tr><th>Kategoria</th><th>IG</th><th>Przykłady</th></tr>
-        </thead>
+        <thead><tr><th>Kategoria</th><th>IG</th><th>Przykłady</th></tr></thead>
         <tbody>
-          <tr><td><span class="badge badge-green">Niski IG</span></td><td>&lt; 55</td><td>Chleb żytni, warzywa, strączki, nabiał</td></tr>
-          <tr><td><span class="badge badge-yellow">Średni IG</span></td><td>55–70</td><td>Ryż brązowy, banany, płatki owsiane</td></tr>
-          <tr><td><span class="badge badge-red">Wysoki IG</span></td><td>&gt; 70</td><td>Biały chleb, ziemniaki, słodycze, ryż biały</td></tr>
+          <tr><td><span class="badge badge-green">Niski</span></td><td>&lt; 55</td><td>Chleb żytni, warzywa, strączki, nabiał</td></tr>
+          <tr><td><span class="badge badge-yellow">Średni</span></td><td>55–70</td><td>Ryż brązowy, banany, płatki owsiane</td></tr>
+          <tr><td><span class="badge badge-red">Wysoki</span></td><td>&gt; 70</td><td>Biały chleb, ziemniaki, słodycze</td></tr>
         </tbody>
       </table>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">⚖️</span> BMI — interpretacja</div>
+      <div class="card-title">⚖️ BMI</div>
       <table class="info-table">
-        <thead>
-          <tr><th>BMI</th><th>Kategoria</th></tr>
-        </thead>
+        <thead><tr><th>BMI</th><th>Kategoria</th></tr></thead>
         <tbody>
           <tr><td>&lt; 18,5</td><td><span class="badge badge-yellow">Niedowaga</span></td></tr>
-          <tr><td>18,5 – 24,9</td><td><span class="badge badge-green">Prawidłowa masa ciała</span></td></tr>
-          <tr><td>25,0 – 29,9</td><td><span class="badge badge-yellow">Nadwaga</span></td></tr>
+          <tr><td>18,5–24,9</td><td><span class="badge badge-green">Prawidłowa masa ciała</span></td></tr>
+          <tr><td>25,0–29,9</td><td><span class="badge badge-yellow">Nadwaga</span></td></tr>
           <tr><td>≥ 30,0</td><td><span class="badge badge-red">Otyłość</span></td></tr>
         </tbody>
       </table>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">ℹ️</span> O aplikacji</div>
-      <p style="font-size:14px; color:var(--muted); line-height:1.7;">
-        GlucoMeal to narzędzie pomocnicze dla osób z cukrzycą typu 1. Informacje zawarte w zakładce <em>Informacje</em> opierają się na wytycznych <strong style="color:var(--text);">Polskiego Towarzystwa Diabetologicznego (PTD)</strong> oraz ogólnodostępnej wiedzy medycznej.<br><br>
-        Aplikacja <strong style="color:var(--text);">nie zastępuje</strong> porady lekarskiej, diabetologa ani dietetyka. Wszelkie decyzje dotyczące dawkowania insuliny podejmuj wyłącznie po konsultacji z lekarzem.
-      </p>
+      <div class="card-title">ℹ️ O aplikacji</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7">GlucoMeal to narzędzie pomocnicze dla osób z cukrzycą typu 1. Informacje opierają się na wytycznych <strong style="color:var(--text)">PTD</strong>. Aplikacja <strong style="color:var(--text)">nie zastępuje</strong> porady lekarskiej ani diabetologa.</p>
     </div>
   </div>
-
 </div>
 
-<!-- ════════════════════ SUPABASE + LOGIC ════════════════════ -->
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Dodaj posiłek</div>
+    <div class="modal-row"><div class="inline-field" style="flex:2"><label>Nazwa dania</label><input type="text" id="modal-name" placeholder="np. Owsianka z owocami"/></div></div>
+    <div class="modal-row">
+      <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="modal-carbs" placeholder="np. 45" min="0"/></div>
+      <div class="inline-field"><label>Gramatura <span class="unit">(g, opcj.)</span></label><input type="number" id="modal-weight" placeholder="np. 250" min="0"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Anuluj</button>
+      <button class="btn btn-primary" onclick="saveMealEntry()">Dodaj</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL  = 'https://giqybscwxjawokvupzbk.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpcXlic2N3eGphd29rdnVwemJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4ODIzMzcsImV4cCI6MjA5MDQ1ODMzN30.QpT-fM7Vxq0AVrvzR9_zzUYJ7Alad0rkd5CbgWFKurY';
 
-  // ══════════════════════════════════════════
-  //  ⚙️  KONFIGURACJA — wklej swoje dane
-  // ══════════════════════════════════════════
-  const SUPABASE_URL  = 'https://giqybscwxjawokvupzbk.supabase.co';
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpcXlic2N3eGphd29rdnVwemJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4ODIzMzcsImV4cCI6MjA5MDQ1ODMzN30.QpT-fM7Vxq0AVrvzR9_zzUYJ7Alad0rkd5CbgWFKurY';
-  // ══════════════════════════════════════════
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+let currentUser = null, userProfile = {}, mealEntries = [], customFoods = [];
+let currentDay = new Date(), currentWeekOffset = 0, modalContext = null;
+let activeFoodCat = 'Wszystkie', foodSearchQuery = '';
 
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const MEALS = [
+  {key:'sniadanie',label:'Śniadanie',icon:'🌅'},
+  {key:'drugie_sniadanie',label:'Drugie śniadanie',icon:'🥐'},
+  {key:'obiad',label:'Obiad',icon:'🍽️'},
+  {key:'podwieczorek',label:'Podwieczorek',icon:'🍎'},
+  {key:'kolacja',label:'Kolacja',icon:'🌙'},
+];
+const DAYS_PL   = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+const DAYS_FULL = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
 
-  let currentUser = null;
-  let userProfile = {};
+function dateKey(d){ return d.toISOString().slice(0,10); }
+function todayKey(){ return dateKey(new Date()); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function flash(id){ const el=document.getElementById(id); el.classList.add('visible'); setTimeout(()=>el.classList.remove('visible'),2500); }
 
-  // ── INIT ──
-  async function init() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      currentUser = session.user;
-      showApp();
-    } else {
-      showAuthPage();
-    }
-    sb.auth.onAuthStateChange((_event, session) => {
-      if (session) { currentUser = session.user; showApp(); }
-      else { showAuthPage(); }
+// ── INIT ──
+async function init(){
+  const {data:{session}} = await sb.auth.getSession();
+  if(session){ currentUser=session.user; await showApp(); }
+  else showAuthPage();
+  sb.auth.onAuthStateChange(async(_,session)=>{
+    if(session){ currentUser=session.user; await showApp(); }
+    else showAuthPage();
+  });
+}
+
+function showAuthPage(){
+  document.getElementById('auth-page').style.display='flex';
+  document.getElementById('main-app').style.display='none';
+}
+
+async function showApp(){
+  document.getElementById('auth-page').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  await loadProfile();
+  await loadMealEntries();
+  await loadCustomFoods();
+  renderDailyPlan();
+  renderWeeklyPlan();
+  renderTodaySummary();
+  renderDiary();
+  renderFoods();
+}
+
+// ── AUTH ──
+function switchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',(i===0)===(tab==='login')));
+  document.getElementById('login-form').style.display    = tab==='login'    ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+  clearMsg();
+}
+function showMsg(t,type){ const el=document.getElementById('auth-msg'); el.textContent=t; el.className='msg '+type; }
+function clearMsg(){ const el=document.getElementById('auth-msg'); el.className='msg'; el.textContent=''; }
+
+async function login(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass) return showMsg('Wypełnij e-mail i hasło.','error');
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true; btn.textContent='Logowanie…';
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  btn.disabled=false; btn.textContent='Zaloguj się';
+  if(error) showMsg('Błąd: '+error.message,'error');
+}
+
+async function register(){
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!email||!pass) return showMsg('Wypełnij e-mail i hasło.','error');
+  if(pass.length<6) return showMsg('Hasło musi mieć min. 6 znaków.','error');
+  const btn=document.getElementById('reg-btn');
+  btn.disabled=true; btn.textContent='Tworzenie konta…';
+  const {error}=await sb.auth.signUp({email,password:pass});
+  btn.disabled=false; btn.textContent='Utwórz konto';
+  if(error) showMsg('Błąd: '+error.message,'error');
+  else showMsg('Konto utworzone! Sprawdź e-mail.','success');
+}
+
+async function logout(){ await sb.auth.signOut(); }
+
+// ── PROFILE ──
+async function loadProfile(){
+  const {data}=await sb.from('profiles').select('*').eq('user_id',currentUser.id).single();
+  if(data){
+    userProfile=data;
+    document.getElementById('p-weight').value=data.weight||'';
+    document.getElementById('p-height').value=data.height||'';
+    document.getElementById('p-a1c').value=data.a1c||'';
+    document.getElementById('p-icr').value=data.icr||'';
+    updateDashboardStats();
+  }
+}
+
+async function saveProfile(){
+  const weight=parseFloat(document.getElementById('p-weight').value)||null;
+  const height=parseFloat(document.getElementById('p-height').value)||null;
+  const a1c   =parseFloat(document.getElementById('p-a1c').value)||null;
+  const icr   =parseFloat(document.getElementById('p-icr').value)||null;
+  const {error}=await sb.from('profiles').upsert({user_id:currentUser.id,weight,height,a1c,icr,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  if(!error){ userProfile={...userProfile,weight,height,a1c,icr}; updateDashboardStats(); flash('save-status'); }
+}
+
+function updateDashboardStats(){
+  const {weight,height,a1c,icr}=userProfile;
+  document.getElementById('dash-weight').textContent=weight?weight+' kg':'—';
+  document.getElementById('dash-a1c').textContent=a1c?a1c+'%':'—';
+  document.getElementById('dash-icr').textContent=icr?icr:'—';
+  if(weight&&height){
+    const bmi=weight/((height/100)**2), r=Math.round(bmi*10)/10;
+    document.getElementById('bmi-card').style.display='block';
+    document.getElementById('bmi-val').textContent=r;
+    const cat=bmi<18.5?'Niedowaga':bmi<25?'Prawidłowa masa ciała':bmi<30?'Nadwaga':'Otyłość';
+    const cls=bmi<18.5?'badge-yellow':bmi<25?'badge-green':bmi<30?'badge-yellow':'badge-red';
+    document.getElementById('bmi-cat').innerHTML=`<span class="badge ${cls}">${cat}</span>`;
+    document.getElementById('bmi-needle').style.left=Math.min(100,Math.max(0,((bmi-16)/24)*100))+'%';
+  }
+}
+
+// ── MEAL ENTRIES ──
+async function loadMealEntries(){
+  const {data}=await sb.from('meal_entries').select('*').eq('user_id',currentUser.id).order('eaten_at',{ascending:false});
+  mealEntries=data||[];
+}
+
+function entriesForDate(dk){ return mealEntries.filter(e=>e.eaten_at===dk); }
+function totalCarbsForDate(dk){ return entriesForDate(dk).reduce((s,e)=>s+(e.carbs||0),0); }
+
+// ── MODAL ──
+function openModal(dateStr,mealKey,prefillName='',prefillCarbs=''){
+  modalContext={dateStr,mealKey};
+  const meal=MEALS.find(m=>m.key===mealKey);
+  document.getElementById('modal-title').textContent='Dodaj do: '+(meal?meal.label:mealKey);
+  document.getElementById('modal-name').value=prefillName;
+  document.getElementById('modal-carbs').value=prefillCarbs;
+  document.getElementById('modal-weight').value='';
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-name').focus(),100);
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); modalContext=null; }
+function closeModalOnBg(e){ if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+async function saveMealEntry(){
+  if(!modalContext) return;
+  const name=document.getElementById('modal-name').value.trim();
+  const carbs=parseFloat(document.getElementById('modal-carbs').value)||0;
+  const weight_g=parseFloat(document.getElementById('modal-weight').value)||null;
+  if(!name) return;
+  const insulin_dose=userProfile.icr?Math.round((carbs/userProfile.icr)*10)/10:null;
+  const {data,error}=await sb.from('meal_entries').insert({user_id:currentUser.id,eaten_at:modalContext.dateStr,meal_type:modalContext.mealKey,name,carbs,weight_g,insulin_dose}).select().single();
+  if(!error&&data){
+    mealEntries.unshift(data);
+    closeModal();
+    renderDailyPlan(); renderWeeklyPlan(); renderTodaySummary(); renderDiary();
+  }
+}
+
+async function deleteMealEntry(id){
+  await sb.from('meal_entries').delete().eq('id',id);
+  mealEntries=mealEntries.filter(e=>e.id!==id);
+  renderDailyPlan(); renderWeeklyPlan(); renderTodaySummary(); renderDiary();
+}
+
+// ── DAILY PLAN ──
+function changeDay(delta){ currentDay=new Date(currentDay); currentDay.setDate(currentDay.getDate()+delta); renderDailyPlan(); }
+
+function renderDailyPlan(){
+  const dk=dateKey(currentDay), isToday=dk===todayKey();
+  const label=isToday?'Dzisiaj':`${DAYS_FULL[currentDay.getDay()]}, ${currentDay.toLocaleDateString('pl-PL',{day:'numeric',month:'long'})}`;
+  document.getElementById('day-label').textContent=label;
+  const entries=entriesForDate(dk), icr=userProfile.icr;
+  let html='';
+  MEALS.forEach(meal=>{
+    const items=entries.filter(e=>e.meal_type===meal.key);
+    const totalC=items.reduce((s,e)=>s+(e.carbs||0),0);
+    const totalD=icr&&totalC?Math.round((totalC/icr)*10)/10:null;
+    html+=`<div class="meal-slot">
+      <div class="meal-slot-header">
+        <div class="meal-slot-title">${meal.icon} ${meal.label}</div>
+        <div class="meal-slot-carbs">${totalC>0?totalC+'g węgl.'+(totalD!==null?' · '+totalD+'j':''):''}</div>
+      </div>
+      <div class="meal-slot-body">`;
+    if(!items.length) html+=`<div style="color:var(--muted);font-size:13px;padding:4px 0">Brak wpisów</div>`;
+    else items.forEach(item=>{
+      const d=item.insulin_dose??( icr?Math.round((item.carbs/icr)*10)/10:null );
+      html+=`<div class="meal-item">
+        <span class="meal-item-name">${esc(item.name)}</span>
+        <span class="meal-item-carbs">${item.carbs}g</span>
+        ${d!==null?`<span class="meal-item-dose">${d}j</span>`:''}
+        <button class="meal-item-del" onclick="deleteMealEntry('${item.id}')">×</button>
+      </div>`;
     });
+    html+=`<button class="add-meal-btn" onclick="openModal('${dk}','${meal.key}')">+ Dodaj</button></div></div>`;
+  });
+  document.getElementById('daily-slots').innerHTML=html;
+}
+
+// ── WEEKLY PLAN ──
+function changeWeek(delta){ currentWeekOffset+=delta; renderWeeklyPlan(); }
+
+function getWeekDays(){
+  const base=new Date(); base.setDate(base.getDate()+currentWeekOffset*7);
+  const mon=new Date(base); mon.setDate(base.getDate()-((base.getDay()+6)%7));
+  return Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+function renderWeeklyPlan(){
+  const days=getWeekDays();
+  document.getElementById('week-label').textContent=`${days[0].toLocaleDateString('pl-PL',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('pl-PL',{day:'numeric',month:'short'})}`;
+  const tk=todayKey();
+  document.getElementById('week-grid').innerHTML=days.map(d=>{
+    const dk=dateKey(d), isT=dk===tk, entries=entriesForDate(dk), totalC=totalCarbsForDate(dk);
+    const dots=[...new Set(entries.map(e=>e.meal_type))].map(k=>{ const m=MEALS.find(x=>x.key===k); return m?`<div class="week-meal-dot">${m.icon} ${entries.filter(e=>e.meal_type===k).length}x</div>`:''; }).join('');
+    return `<div class="week-day-col">
+      <div class="week-day-head${isT?' today':''}">${DAYS_PL[d.getDay()]}<br><span style="font-weight:400;font-size:10px">${d.getDate()}</span></div>
+      <div class="week-day-body">${dots}${totalC>0?`<div class="week-total">${totalC}g</div>`:''}
+      <button class="week-add" onclick="openDayFromWeek('${dk}')" title="Otwórz dzień">+</button></div></div>`;
+  }).join('');
+}
+
+function openDayFromWeek(dateStr){
+  currentDay=new Date(dateStr+'T12:00:00');
+  document.querySelectorAll('.plan-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.getElementById('plan-daily').style.display='block';
+  document.getElementById('plan-weekly').style.display='none';
+  renderDailyPlan();
+}
+
+function switchPlanView(view,btn){
+  document.getElementById('plan-daily').style.display=view==='day'?'block':'none';
+  document.getElementById('plan-weekly').style.display=view==='week'?'block':'none';
+  document.querySelectorAll('.plan-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(view==='day') renderDailyPlan();
+  if(view==='week') renderWeeklyPlan();
+}
+
+// ── TODAY SUMMARY ──
+function renderTodaySummary(){
+  const entries=entriesForDate(todayKey());
+  if(!entries.length){ document.getElementById('today-summary').textContent='Brak wpisów na dziś.'; return; }
+  const totalC=entries.reduce((s,e)=>s+(e.carbs||0),0);
+  const totalD=userProfile.icr?Math.round((totalC/userProfile.icr)*10)/10:null;
+  let html=`<div style="margin-bottom:10px;font-size:13.5px">Łącznie: <strong>${totalC}g</strong> węglowodanów${totalD!==null?' → <strong style="color:var(--accent)">${totalD} j.</strong>':''}</div>`;
+  MEALS.forEach(m=>{
+    const items=entries.filter(e=>e.meal_type===m.key);
+    if(!items.length) return;
+    html+=`<div style="margin-bottom:6px"><span style="font-weight:600;font-size:13px">${m.icon} ${m.label}</span>`;
+    items.forEach(item=>{ html+=`<div style="font-size:12.5px;color:var(--muted);padding-left:20px">${esc(item.name)} — ${item.carbs}g</div>`; });
+    html+=`</div>`;
+  });
+  document.getElementById('today-summary').innerHTML=html;
+}
+
+// ── DIARY ──
+function renderDiary(){
+  if(!mealEntries.length){ document.getElementById('diary-list').innerHTML='<div style="color:var(--muted);font-size:13.5px">Brak wpisów.</div>'; return; }
+  const byDate={};
+  mealEntries.forEach(e=>{ if(!byDate[e.eaten_at]) byDate[e.eaten_at]=[]; byDate[e.eaten_at].push(e); });
+  let html='';
+  Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).forEach(dk=>{
+    const items=byDate[dk], totalC=items.reduce((s,e)=>s+(e.carbs||0),0);
+    const totalD=userProfile.icr?Math.round((totalC/userProfile.icr)*10)/10:null;
+    const d=new Date(dk+'T12:00:00');
+    html+=`<div class="diary-entry">
+      <div class="diary-entry-head">
+        <div class="diary-entry-title">${d.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'})}</div>
+        <div class="diary-entry-meta">${items.length} wpisów</div>
+      </div>
+      <div class="diary-stats">
+        <div class="diary-stat">Węglowodany: <strong>${totalC}g</strong></div>
+        ${totalD!==null?`<div class="diary-stat">Insulina: <strong style="color:var(--accent)">${totalD}j</strong></div>`:''}
+      </div>
+      <div style="margin-top:8px">`;
+    items.forEach(item=>{ const m=MEALS.find(x=>x.key===item.meal_type); html+=`<div style="font-size:12.5px;color:var(--muted);padding:2px 0">${m?m.icon:''} ${esc(item.name)} — ${item.carbs}g</div>`; });
+    html+=`</div></div>`;
+  });
+  document.getElementById('diary-list').innerHTML=html;
+}
+
+// ── FOOD DB ──
+const BUILTIN_FOODS=[
+  {name:'Chleb pszenny',carbs:49,cat:'Pieczywo'},{name:'Chleb razowy',carbs:41,cat:'Pieczywo'},{name:'Bułka pszenna',carbs:52,cat:'Pieczywo'},
+  {name:'Mleko 2%',carbs:5,cat:'Nabiał'},{name:'Jogurt naturalny',carbs:4,cat:'Nabiał'},{name:'Twaróg',carbs:3,cat:'Nabiał'},
+  {name:'Ryż biały (ugot.)',carbs:28,cat:'Kasze i ryże'},{name:'Ryż brązowy (ugot.)',carbs:23,cat:'Kasze i ryże'},{name:'Kasza gryczana',carbs:65,cat:'Kasze i ryże'},
+  {name:'Makaron (ugot.)',carbs:25,cat:'Makarony'},
+  {name:'Ziemniaki (got.)',carbs:17,cat:'Warzywa'},{name:'Marchew',carbs:7,cat:'Warzywa'},{name:'Brokuły',carbs:4,cat:'Warzywa'},{name:'Pomidor',carbs:3,cat:'Warzywa'},
+  {name:'Jabłko',carbs:12,cat:'Owoce'},{name:'Banan',carbs:20,cat:'Owoce'},{name:'Truskawki',carbs:7,cat:'Owoce'},{name:'Pomarańcza',carbs:9,cat:'Owoce'},
+  {name:'Kurczak (pierś)',carbs:0,cat:'Mięso i ryby'},{name:'Łosoś',carbs:0,cat:'Mięso i ryby'},{name:'Jajko',carbs:0,cat:'Mięso i ryby'},
+  {name:'Płatki owsiane',carbs:60,cat:'Przekąski'},{name:'Orzechy włoskie',carbs:7,cat:'Przekąski'},{name:'Czekolada gorzka',carbs:46,cat:'Przekąski'},
+];
+
+async function loadCustomFoods(){
+  const {data}=await sb.from('custom_foods').select('*').eq('user_id',currentUser.id);
+  customFoods=data||[];
+}
+
+function allFoods(){ return [...BUILTIN_FOODS,...customFoods.map(f=>({name:f.name,carbs:f.carbs_per_100g,cat:f.category,id:f.id,custom:true}))]; }
+
+function renderFoods(){
+  const foods=allFoods();
+  const cats=['Wszystkie',...[...new Set(foods.map(f=>f.cat))]];
+  document.getElementById('food-category-tabs').innerHTML=cats.map(c=>`<button class="food-tab${c===activeFoodCat?' active':''}" onclick="setFoodCat('${c}',this)">${c}</button>`).join('');
+  let filtered=foods;
+  if(activeFoodCat!=='Wszystkie') filtered=filtered.filter(f=>f.cat===activeFoodCat);
+  if(foodSearchQuery) filtered=filtered.filter(f=>f.name.toLowerCase().includes(foodSearchQuery.toLowerCase()));
+  document.getElementById('food-list').innerHTML=filtered.length
+    ? filtered.map(f=>`<div class="food-item" onclick="addFoodToPlan('${esc(f.name)}',${f.carbs})"><div><div class="food-item-name">${esc(f.name)}</div><div class="food-item-detail">${f.cat}</div></div><div class="food-item-carbs">${f.carbs}g/100g</div></div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px">Brak wyników.</div>';
+}
+
+function setFoodCat(cat,btn){ activeFoodCat=cat; document.querySelectorAll('.food-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderFoods(); }
+function filterFoods(q){ foodSearchQuery=q; renderFoods(); }
+function addFoodToPlan(name,carbs){ openModal(dateKey(currentDay),'obiad',name,carbs); }
+
+async function saveCustomFood(){
+  const name=document.getElementById('custom-food-name').value.trim();
+  const carbs=parseFloat(document.getElementById('custom-food-carbs').value)||0;
+  const category=document.getElementById('custom-food-cat').value;
+  if(!name) return;
+  const {data,error}=await sb.from('custom_foods').insert({user_id:currentUser.id,name,carbs_per_100g:carbs,category}).select().single();
+  if(!error&&data){
+    customFoods.push(data);
+    document.getElementById('custom-food-name').value='';
+    document.getElementById('custom-food-carbs').value='';
+    renderFoods(); flash('food-save-status');
   }
+}
 
-  function showAuthPage() {
-    document.getElementById('auth-page').style.display = 'flex';
-    document.getElementById('main-app').style.display = 'none';
-  }
+// ── CALCULATORS ──
+function quickCalc(){
+  const carbs=parseFloat(document.getElementById('quick-carbs').value), icr=userProfile.icr;
+  const res=document.getElementById('quick-result');
+  if(!carbs||carbs<=0){ res.classList.remove('visible'); return; }
+  if(!icr){ res.classList.add('visible'); document.getElementById('quick-dose').innerHTML='—<span>ustaw ICR w Profilu</span>'; document.getElementById('quick-detail').textContent=''; return; }
+  const dose=carbs/icr; res.classList.add('visible');
+  document.getElementById('quick-dose').innerHTML=`${Math.round(dose*10)/10}<span>jednostek</span>`;
+  document.getElementById('quick-detail').textContent=`${carbs}g ÷ ICR ${icr} = ${Math.round(dose*10)/10} j.`;
+}
 
-  function showApp() {
-    document.getElementById('auth-page').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    loadProfile();
-  }
+function fullCalc(){
+  const carbs=parseFloat(document.getElementById('calc-carbs').value);
+  const icr=parseFloat(document.getElementById('calc-icr-override').value)||userProfile.icr;
+  const res=document.getElementById('full-result');
+  if(!carbs||carbs<=0){ res.classList.remove('visible'); return; }
+  if(!icr){ res.classList.add('visible'); document.getElementById('full-dose').innerHTML='—<span>wpisz ICR</span>'; document.getElementById('full-detail').textContent=''; return; }
+  const dose=carbs/icr; res.classList.add('visible');
+  document.getElementById('full-dose').innerHTML=`${Math.round(dose*10)/10}<span>jednostek</span>`;
+  document.getElementById('full-detail').textContent=`${carbs}g ÷ ICR ${icr} = ${Math.round(dose*10)/10} jednostek insuliny`;
+}
 
-  // ── AUTH TABS ──
-  function switchTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach((b,i) => b.classList.toggle('active', (i===0) === (tab==='login')));
-    document.getElementById('login-form').style.display    = tab === 'login'    ? 'block' : 'none';
-    document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
-    clearMsg();
-  }
+// ── NAV ──
+function showScreen(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
 
-  function showMsg(text, type) {
-    const el = document.getElementById('auth-msg');
-    el.textContent = text;
-    el.className = 'msg ' + type;
-  }
-
-  function clearMsg() {
-    const el = document.getElementById('auth-msg');
-    el.className = 'msg';
-    el.textContent = '';
-  }
-
-  // ── LOGIN ──
-  async function login() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass  = document.getElementById('login-pass').value;
-    if (!email || !pass) return showMsg('Wypełnij e-mail i hasło.', 'error');
-    const btn = document.getElementById('login-btn');
-    btn.disabled = true; btn.textContent = 'Logowanie…';
-    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    btn.disabled = false; btn.textContent = 'Zaloguj się';
-    if (error) showMsg('Błąd: ' + error.message, 'error');
-  }
-
-  // ── REGISTER ──
-  async function register() {
-    const email = document.getElementById('reg-email').value.trim();
-    const pass  = document.getElementById('reg-pass').value;
-    if (!email || !pass) return showMsg('Wypełnij e-mail i hasło.', 'error');
-    if (pass.length < 6)  return showMsg('Hasło musi mieć min. 6 znaków.', 'error');
-    const btn = document.getElementById('reg-btn');
-    btn.disabled = true; btn.textContent = 'Tworzenie konta…';
-    const { error } = await sb.auth.signUp({ email, password: pass });
-    btn.disabled = false; btn.textContent = 'Utwórz konto';
-    if (error) showMsg('Błąd: ' + error.message, 'error');
-    else showMsg('Konto utworzone! Sprawdź e-mail w celu potwierdzenia.', 'success');
-  }
-
-  // ── LOGOUT ──
-  async function logout() {
-    await sb.auth.signOut();
-  }
-
-  // ── PROFILE ──
-  async function loadProfile() {
-    if (!currentUser) return;
-    const { data } = await sb.from('profiles').select('*').eq('user_id', currentUser.id).single();
-    if (data) {
-      userProfile = data;
-      document.getElementById('p-weight').value = data.weight || '';
-      document.getElementById('p-height').value = data.height || '';
-      document.getElementById('p-a1c').value    = data.a1c    || '';
-      document.getElementById('p-icr').value    = data.icr    || '';
-      updateDashboard();
-    }
-  }
-
-  async function saveProfile() {
-    const weight = parseFloat(document.getElementById('p-weight').value) || null;
-    const height = parseFloat(document.getElementById('p-height').value) || null;
-    const a1c    = parseFloat(document.getElementById('p-a1c').value)    || null;
-    const icr    = parseFloat(document.getElementById('p-icr').value)    || null;
-
-    const payload = { user_id: currentUser.id, weight, height, a1c, icr, updated_at: new Date().toISOString() };
-
-    const { error } = await sb.from('profiles').upsert(payload, { onConflict: 'user_id' });
-    if (!error) {
-      userProfile = payload;
-      updateDashboard();
-      const s = document.getElementById('save-status');
-      s.classList.add('visible');
-      setTimeout(() => s.classList.remove('visible'), 2500);
-    }
-  }
-
-  function updateDashboard() {
-    const { weight, height, a1c, icr } = userProfile;
-    document.getElementById('dash-weight').textContent = weight ? weight + ' kg' : '—';
-    document.getElementById('dash-a1c').textContent    = a1c    ? a1c + '%'     : '—';
-    document.getElementById('dash-icr').textContent    = icr    ? icr           : '—';
-
-    if (weight && height) {
-      const bmi = weight / ((height / 100) ** 2);
-      const bmiRound = Math.round(bmi * 10) / 10;
-      document.getElementById('bmi-card').style.display = 'block';
-      document.getElementById('bmi-val').textContent = bmiRound;
-      const cat = bmi < 18.5 ? 'Niedowaga' : bmi < 25 ? 'Prawidłowa masa ciała' : bmi < 30 ? 'Nadwaga' : 'Otyłość';
-      const catClass = bmi < 18.5 ? 'badge-yellow' : bmi < 25 ? 'badge-green' : bmi < 30 ? 'badge-yellow' : 'badge-red';
-      document.getElementById('bmi-cat').innerHTML = `<span class="badge ${catClass}">${cat}</span>`;
-      // needle: BMI 16=0% 40=100%
-      const pct = Math.min(100, Math.max(0, ((bmi - 16) / 24) * 100));
-      document.getElementById('bmi-needle').style.left = pct + '%';
-    }
-  }
-
-  // ── QUICK CALC (dashboard) ──
-  function quickCalc() {
-    const carbs = parseFloat(document.getElementById('quick-carbs').value);
-    const icr   = userProfile.icr;
-    const res   = document.getElementById('quick-result');
-
-    if (!carbs || carbs <= 0) { res.classList.remove('visible'); return; }
-    if (!icr) {
-      res.classList.add('visible');
-      document.getElementById('quick-dose').innerHTML = '—<span>ustaw ICR w Profilu</span>';
-      document.getElementById('quick-detail').textContent = '';
-      return;
-    }
-    const dose = carbs / icr;
-    res.classList.add('visible');
-    document.getElementById('quick-dose').innerHTML = `${Math.round(dose * 10) / 10}<span>jednostek</span>`;
-    document.getElementById('quick-detail').textContent = `${carbs}g węglowodanów ÷ ICR ${icr} = ${Math.round(dose * 10) / 10} j.`;
-  }
-
-  // ── FULL CALC (calculator tab) ──
-  function fullCalc() {
-    const carbs    = parseFloat(document.getElementById('calc-carbs').value);
-    const icrInput = parseFloat(document.getElementById('calc-icr-override').value);
-    const icr      = icrInput || userProfile.icr;
-    const res      = document.getElementById('full-result');
-
-    if (!carbs || carbs <= 0) { res.classList.remove('visible'); return; }
-    if (!icr) {
-      res.classList.add('visible');
-      document.getElementById('full-dose').innerHTML = '—<span>wpisz ICR powyżej lub w Profilu</span>';
-      document.getElementById('full-detail').textContent = '';
-      return;
-    }
-    const dose = carbs / icr;
-    res.classList.add('visible');
-    document.getElementById('full-dose').innerHTML = `${Math.round(dose * 10) / 10}<span>jednostek</span>`;
-    document.getElementById('full-detail').textContent = `${carbs}g węglowodanów ÷ ICR ${icr} = ${Math.round(dose * 10) / 10} jednostek insuliny`;
-  }
-
-  // ── NAV ──
-  function showScreen(name) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('screen-' + name).classList.add('active');
-    event.currentTarget.classList.add('active');
-  }
-
-  init();
+init();
 </script>
 </body>
 </html>
