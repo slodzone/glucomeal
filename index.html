@@ -979,17 +979,17 @@ function calcKcal(carbs, protein, fat){ return r0(carbs*4 + protein*4 + fat*9); 
 
 // ── NAVIGATION ──
 function showScreen(name){
+  if(!currentUser) return;
+  const el = document.getElementById('screen-'+name);
+  if(!el) return;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+name).classList.add('active');
-  // top nav
+  el.classList.add('active');
   document.querySelectorAll('.tnav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.screen===name);
   });
-  // bottom nav
   document.querySelectorAll('.bnav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.screen===name);
   });
-  // screen-specific init
   if(name==='stats')   renderStats();
   if(name==='diary')   renderDiary();
   if(name==='foods')   { loadSharedFoods().then(renderFoodsMain); }
