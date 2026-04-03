@@ -1396,8 +1396,8 @@ function renderDiary(){
 
 // ── FOOD DB ──
 async function loadSharedFoods(){
-  const {data}=await sb.from('shared_foods').select('*').order('name');
-  sharedFoods=data||[];
+  const {data, error}=await sb.from('shared_foods').select('*').order('name');
+  sharedFoods=(error||!data)?[]:data;
 }
 
 function renderFoodsMain(){
