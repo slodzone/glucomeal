@@ -303,6 +303,36 @@
     .step-row .btn-icon{margin-top:8px;color:var(--muted);font-size:18px}
     .step-row .btn-icon:hover{color:var(--accent)}
 
+
+    /* ── GLUKOZA ── */
+    .glucose-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+    .glucose-range-tabs{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:3px}
+    .glucose-range-btn{padding:6px 12px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+    .glucose-range-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .glucose-chart-wrap{overflow-x:auto;margin-bottom:4px}
+    .glucose-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+    .glucose-legend-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)}
+    .glucose-legend-dot{width:10px;height:10px;border-radius:50%}
+    .glucose-entry{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13.5px}
+    .glucose-entry:last-child{border-bottom:none}
+    .glucose-badge{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:15px;font-weight:700;flex-shrink:0}
+    .glucose-badge.low{background:#fff3cd;color:#856404}
+    .glucose-badge.ok{background:var(--green-lt);color:var(--green)}
+    .glucose-badge.high{background:var(--accent-lt);color:var(--accent)}
+    .glucose-entry-info{flex:1;min-width:0}
+    .glucose-entry-time{font-size:11.5px;color:var(--muted);margin-top:1px}
+    .glucose-entry-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+    .glucose-tag{padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;background:var(--blue-lt);color:var(--blue)}
+    .glucose-tag.insulin{background:var(--accent-lt);color:var(--accent)}
+    .glucose-tag.notes{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+    .glucose-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+    .glucose-stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+    .glucose-stat-val{font-family:'Fraunces',serif;font-size:22px;margin-bottom:2px}
+    .glucose-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .tir-bar{height:12px;border-radius:6px;overflow:hidden;display:flex;margin-top:8px;gap:2px}
+    .tir-segment{height:100%;border-radius:3px;transition:width .5s}
+    .add-glucose-btn{display:flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:filter .2s;white-space:nowrap}
+    .add-glucose-btn:hover{filter:brightness(1.1)}
     @media(max-width:540px){
       .profile-grid{grid-template-columns:1fr}
       .auth-card{padding:28px 20px}
@@ -360,6 +390,7 @@
     <button class="tnav-btn" data-screen="diary">Dziennik</button>
     <button class="tnav-btn" data-screen="calculator">Kalkulator</button>
     <button class="tnav-btn" data-screen="recipes">Przepisy</button>
+    <button class="tnav-btn" data-screen="glucose">Glukoza</button>
     <button class="tnav-btn" data-screen="stats">Statystyki</button>
     <button class="tnav-btn" data-screen="foods">Produkty</button>
     <button class="tnav-btn" data-screen="profile">Profil</button>
@@ -712,6 +743,66 @@
     </div>
   </div>
 
+
+  <!-- ── GLUKOZA ── -->
+  <div class="screen" id="screen-glucose">
+
+    <!-- Stats row -->
+    <div class="glucose-stats-grid">
+      <div class="glucose-stat-box"><div class="glucose-stat-val" id="g-avg">—</div><div class="glucose-stat-lbl">Średnia (mg/dL)</div></div>
+      <div class="glucose-stat-box"><div class="glucose-stat-val" id="g-tir">—</div><div class="glucose-stat-lbl">Czas w celu (%)</div></div>
+      <div class="glucose-stat-box"><div class="glucose-stat-val" id="g-count">—</div><div class="glucose-stat-lbl">Pomiary dziś</div></div>
+    </div>
+
+    <!-- TIR bar -->
+    <div class="card" style="padding:16px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:600">Czas w zakresie (TIR)</div>
+        <div style="font-size:11.5px;color:var(--muted)">Cel: &gt;70% w zakresie</div>
+      </div>
+      <div class="tir-bar" id="tir-bar">
+        <div class="tir-segment" style="background:#ffc107;width:0%" id="tir-low"></div>
+        <div class="tir-segment" style="background:var(--green);width:0%" id="tir-ok"></div>
+        <div class="tir-segment" style="background:var(--accent);width:0%" id="tir-high"></div>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:11px;color:#856404">🟡 Niski &lt;70 (<span id="tir-low-pct">0</span>%)</span>
+        <span style="font-size:11px;color:var(--green)">🟢 OK 70–180 (<span id="tir-ok-pct">0</span>%)</span>
+        <span style="font-size:11px;color:var(--accent)">🔴 Wysoki &gt;180 (<span id="tir-high-pct">0</span>%)</span>
+      </div>
+    </div>
+
+    <!-- Chart + controls -->
+    <div class="card">
+      <div class="glucose-header">
+        <div class="card-title" style="margin-bottom:0">📈 Wykres glukozy</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="glucose-range-tabs">
+            <button class="glucose-range-btn active" onclick="setGlucoseRange(1,this)">1d</button>
+            <button class="glucose-range-btn" onclick="setGlucoseRange(3,this)">3d</button>
+            <button class="glucose-range-btn" onclick="setGlucoseRange(7,this)">7d</button>
+            <button class="glucose-range-btn" onclick="setGlucoseRange(14,this)">14d</button>
+          </div>
+          <button class="add-glucose-btn" onclick="openGlucoseModal()">+ Dodaj pomiar</button>
+        </div>
+      </div>
+      <div class="glucose-chart-wrap" id="glucose-chart-wrap">
+        <div style="color:var(--muted);font-size:13.5px;padding:20px 0">Brak pomiarów. Dodaj pierwszy wpis.</div>
+      </div>
+      <div class="glucose-legend">
+        <div class="glucose-legend-item"><div class="glucose-legend-dot" style="background:var(--green)"></div>Glukoza (mg/dL)</div>
+        <div class="glucose-legend-item"><div class="glucose-legend-dot" style="background:var(--accent)"></div>Insulina (j)</div>
+        <div class="glucose-legend-item"><div class="glucose-legend-dot" style="background:#ffc107;border:1px dashed #aaa"></div>Zakres docelowy</div>
+      </div>
+    </div>
+
+    <!-- Entry list -->
+    <div class="card">
+      <div class="card-title">📋 Historia pomiarów</div>
+      <div id="glucose-list"><div style="color:var(--muted);font-size:13.5px">Brak wpisów.</div></div>
+    </div>
+  </div>
+
 </div><!-- end .app -->
 <nav class="bottom-nav" id="bottom-nav">
   <button class="bnav-btn active" data-screen="dashboard"><span class="bico">🏠</span>Pulpit</button>
@@ -720,6 +811,7 @@
   <button class="bnav-btn" data-screen="calculator"><span class="bico">🧮</span>Kalkulator</button>
   <button class="bnav-btn" data-screen="recipes"><span class="bico">🍳</span>Przepisy</button>
   <button class="bnav-btn" data-screen="foods"><span class="bico">🥦</span>Produkty</button>
+  <button class="bnav-btn" data-screen="glucose"><span class="bico">🩸</span>Glukoza</button>
   <button class="bnav-btn" data-screen="stats"><span class="bico">📈</span>Statystyki</button>
   <button class="bnav-btn" data-screen="profile"><span class="bico">👤</span>Profil</button>
 </nav>
@@ -1005,6 +1097,7 @@ function showScreen(name){
   if(name==='foods')   { loadSharedFoods().then(renderFoodsMain); }
   if(name==='plan')    renderDailyPlan();
   if(name==='recipes') initRecipesScreen();
+  if(name==='glucose') initGlucoseScreen();
 }
 
 // wire nav buttons (no inline onclick for nav — avoids event issues)
@@ -1033,7 +1126,7 @@ async function bootApp(){
   document.getElementById('auth-page').style.display='none';
   document.getElementById('main-app').style.display='block';
   document.getElementById('bottom-nav').classList.add('visible');
-  await Promise.all([loadProfile(), loadMealEntries(), loadSharedFoods()]);
+  await Promise.all([loadProfile(), loadMealEntries(), loadSharedFoods(), loadGlucoseEntries()]);
   renderDailyPlan(); renderWeeklyPlan(); renderTodaySummary(); renderDiary(); renderFoodsMain();
   prefillCalc();
 }
@@ -1972,7 +2065,292 @@ function switchRecipeTab(tab){
   if(tab==='add') initAddRecipeForm();
 }
 
+// ══════════════════════════════════════
+// GLUKOZA
+// ══════════════════════════════════════
+let glucoseEntries = [];
+let glucoseRangeDays = 1;
+
+async function loadGlucoseEntries(){
+  const from = new Date();
+  from.setDate(from.getDate() - 30);
+  const {data, error} = await sb.from('glucose_logs')
+    .select('*').eq('user_id', currentUser.id)
+    .gte('measured_at', from.toISOString())
+    .order('measured_at', {ascending: false});
+  glucoseEntries = (error || !data) ? [] : data;
+}
+
+async function initGlucoseScreen(){
+  await loadGlucoseEntries();
+  renderGlucoseStats();
+  renderGlucoseChart();
+  renderGlucoseList();
+}
+
+function setGlucoseRange(days, btn){
+  glucoseRangeDays = days;
+  document.querySelectorAll('.glucose-range-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGlucoseChart();
+}
+
+function glucoseColor(val){
+  if(!val) return 'ok';
+  if(val < 70) return 'low';
+  if(val <= 180) return 'ok';
+  return 'high';
+}
+
+function renderGlucoseStats(){
+  const today = todayKey();
+  const todayEntries = glucoseEntries.filter(e => e.measured_at && e.measured_at.startsWith(today));
+  const withGlucose = glucoseEntries.filter(e => e.glucose_mgdl);
+  const avg = withGlucose.length ? Math.round(withGlucose.reduce((s,e)=>s+e.glucose_mgdl,0)/withGlucose.length) : null;
+  const target_lo = userProfile.target_glucose ? userProfile.target_glucose * 0.7 : 70;
+  const target_hi = userProfile.target_glucose ? userProfile.target_glucose * 1.5 : 180;
+  const low  = withGlucose.filter(e=>e.glucose_mgdl < 70).length;
+  const ok   = withGlucose.filter(e=>e.glucose_mgdl >= 70 && e.glucose_mgdl <= 180).length;
+  const high = withGlucose.filter(e=>e.glucose_mgdl > 180).length;
+  const total = withGlucose.length || 1;
+  const tirPct = Math.round((ok/total)*100);
+  document.getElementById('g-avg').textContent = avg ? avg+'' : '—';
+  document.getElementById('g-tir').textContent = withGlucose.length ? tirPct+'%' : '—';
+  document.getElementById('g-count').textContent = todayEntries.filter(e=>e.glucose_mgdl).length;
+  const lowP = Math.round((low/total)*100);
+  const okP  = Math.round((ok/total)*100);
+  const hiP  = Math.round((high/total)*100);
+  document.getElementById('tir-low').style.width  = lowP+'%';
+  document.getElementById('tir-ok').style.width   = okP+'%';
+  document.getElementById('tir-high').style.width = hiP+'%';
+  document.getElementById('tir-low-pct').textContent  = lowP;
+  document.getElementById('tir-ok-pct').textContent   = okP;
+  document.getElementById('tir-high-pct').textContent = hiP;
+}
+
+function renderGlucoseChart(){
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - glucoseRangeDays);
+  const entries = glucoseEntries
+    .filter(e => e.glucose_mgdl && new Date(e.measured_at) >= cutoff)
+    .slice().reverse();
+
+  if(!entries.length){
+    document.getElementById('glucose-chart-wrap').innerHTML =
+      '<div style="color:var(--muted);font-size:13.5px;padding:20px 0">Brak pomiarów w tym zakresie.</div>';
+    return;
+  }
+
+  const W=600, H=220, pl=44, pr=16, pt=16, pb=36;
+  const cw=W-pl-pr, ch=H-pt-pb;
+  const vals = entries.map(e=>e.glucose_mgdl).filter(Boolean);
+  const minV = Math.max(0, Math.min(...vals) - 20);
+  const maxV = Math.max(...vals) + 20;
+  const range = maxV - minV || 1;
+  const xStep = entries.length > 1 ? cw/(entries.length-1) : cw;
+
+  const toX = i => pl + i * xStep;
+  const toY = v => pt + ch - ((v - minV)/range)*ch;
+
+  // target zone lines (70–180)
+  const y70  = toY(Math.min(70, maxV));
+  const y180 = toY(Math.max(180, minV));
+  const targetLo = userProfile.target_glucose ? Math.round(userProfile.target_glucose * 0.85) : 70;
+  const targetHi = userProfile.target_glucose ? Math.round(userProfile.target_glucose * 1.5)  : 180;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:320px;height:auto">`;
+
+  // Target zone shading
+  const zY1 = toY(Math.min(targetHi, maxV));
+  const zY2 = toY(Math.max(targetLo, minV));
+  svg += `<rect x="${pl}" y="${Math.min(zY1,pt)}" width="${cw}" height="${Math.abs(zY2-zY1)}" fill="var(--green)" opacity=".08"/>`;
+
+  // Grid lines
+  [0,1,2,3,4].forEach(i=>{
+    const y = pt + (ch/4)*i;
+    const v = Math.round(maxV - (range/4)*i);
+    svg += `<line x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    svg += `<text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="9" fill="var(--muted)" font-family="Plus Jakarta Sans,sans-serif">${v}</text>`;
+  });
+
+  // Target lines
+  if(targetLo >= minV && targetLo <= maxV){
+    const yLo = toY(targetLo);
+    svg += `<line x1="${pl}" y1="${yLo}" x2="${W-pr}" y2="${yLo}" stroke="#ffc107" stroke-width="1" stroke-dasharray="4,3"/>`;
+  }
+  if(targetHi >= minV && targetHi <= maxV){
+    const yHi = toY(targetHi);
+    svg += `<line x1="${pl}" y1="${yHi}" x2="${W-pr}" y2="${yHi}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4,3"/>`;
+  }
+
+  // Insulin bars
+  entries.forEach((e,i)=>{
+    if(!e.insulin_dose) return;
+    const x = toX(i);
+    const barH = Math.min(ch * 0.35, e.insulin_dose * 4);
+    svg += `<rect x="${x-4}" y="${pt+ch-barH}" width="8" height="${barH}" rx="2" fill="var(--accent)" opacity=".5"/>`;
+  });
+
+  // Glucose line
+  const pts = entries.map((e,i)=>`${toX(i)},${toY(e.glucose_mgdl)}`).join(' ');
+  svg += `<polyline points="${pts}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+
+  // Dots
+  entries.forEach((e,i)=>{
+    const x=toX(i), y=toY(e.glucose_mgdl);
+    const col = e.glucose_mgdl < 70 ? '#ffc107' : e.glucose_mgdl > 180 ? 'var(--accent)' : 'var(--green)';
+    svg += `<circle cx="${x}" cy="${y}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`;
+  });
+
+  // Time labels (show ~5 evenly spaced)
+  const labelStep = Math.max(1, Math.floor(entries.length / 5));
+  entries.forEach((e,i)=>{
+    if(i % labelStep !== 0 && i !== entries.length-1) return;
+    const d = new Date(e.measured_at);
+    const label = glucoseRangeDays <= 1
+      ? d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})
+      : d.toLocaleDateString('pl-PL',{day:'numeric',month:'short'});
+    svg += `<text x="${toX(i)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="Plus Jakarta Sans,sans-serif">${label}</text>`;
+  });
+
+  svg += `</svg>`;
+  document.getElementById('glucose-chart-wrap').innerHTML = svg;
+}
+
+function renderGlucoseList(){
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - glucoseRangeDays);
+  const entries = glucoseEntries.filter(e => new Date(e.measured_at) >= cutoff);
+
+  if(!entries.length){
+    document.getElementById('glucose-list').innerHTML = '<div style="color:var(--muted);font-size:13.5px">Brak wpisów w tym zakresie.</div>';
+    return;
+  }
+
+  const insulinLabels = {
+    bolus_meal: 'Bolus posiłkowy',
+    bolus_correction: 'Bolus korekcyjny',
+    basal: 'Bazowa'
+  };
+
+  let html = '';
+  entries.forEach(e=>{
+    const col = glucoseColor(e.glucose_mgdl);
+    const d = new Date(e.measured_at);
+    const timeStr = d.toLocaleString('pl-PL',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    html += `<div class="glucose-entry">
+      ${e.glucose_mgdl ? `<div class="glucose-badge ${col}">${e.glucose_mgdl}</div>` : '<div class="glucose-badge ok" style="font-size:18px">💉</div>'}
+      <div class="glucose-entry-info">
+        <div style="font-weight:600;font-size:13.5px">${e.glucose_mgdl ? e.glucose_mgdl+' mg/dL' : 'Tylko insulina'}</div>
+        <div class="glucose-entry-time">${timeStr}</div>
+        <div class="glucose-entry-tags">
+          ${e.insulin_dose ? `<span class="glucose-tag insulin">💉 ${e.insulin_dose}j ${insulinLabels[e.insulin_type]||''}</span>` : ''}
+          ${e.notes ? `<span class="glucose-tag notes">${esc(e.notes)}</span>` : ''}
+        </div>
+      </div>
+      <button class="btn-icon" onclick="deleteGlucoseEntry('${e.id}')" style="color:var(--muted)" title="Usuń">🗑️</button>
+    </div>`;
+  });
+  document.getElementById('glucose-list').innerHTML = html;
+}
+
+// ── GLUCOSE MODAL ──
+function openGlucoseModal(){
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('g-datetime').value = local;
+  document.getElementById('g-glucose').value = '';
+  document.getElementById('g-insulin-type').value = '';
+  document.getElementById('g-insulin-dose').value = '';
+  document.getElementById('g-notes').value = '';
+  document.getElementById('glucose-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('g-glucose').focus(), 150);
+}
+function closeGlucoseModal(){ document.getElementById('glucose-overlay').classList.remove('open'); }
+function closeGlucoseModalOnBg(e){ if(e.target===document.getElementById('glucose-overlay')) closeGlucoseModal(); }
+
+async function saveGlucoseEntry(){
+  const glucose = parseFloat(document.getElementById('g-glucose').value) || null;
+  const datetime = document.getElementById('g-datetime').value;
+  const insulin_type = document.getElementById('g-insulin-type').value || null;
+  const insulin_dose = parseFloat(document.getElementById('g-insulin-dose').value) || null;
+  const notes = document.getElementById('g-notes').value.trim() || null;
+
+  if(!glucose && !insulin_dose){ alert('Wpisz poziom cukru lub dawkę insuliny.'); return; }
+  if(!datetime){ alert('Wybierz datę i godzinę.'); return; }
+
+  const measured_at = new Date(datetime).toISOString();
+  const {data, error} = await sb.from('glucose_logs').insert({
+    user_id: currentUser.id, glucose_mgdl: glucose,
+    measured_at, insulin_type, insulin_dose, notes
+  }).select().single();
+
+  if(!error && data){
+    glucoseEntries.unshift(data);
+    closeGlucoseModal();
+    renderGlucoseStats();
+    renderGlucoseChart();
+    renderGlucoseList();
+  }
+}
+
+async function deleteGlucoseEntry(id){
+  if(!confirm('Usunąć ten wpis?')) return;
+  const {error} = await sb.from('glucose_logs').delete().eq('id', id);
+  if(!error){
+    glucoseEntries = glucoseEntries.filter(e=>e.id!==id);
+    renderGlucoseStats();
+    renderGlucoseChart();
+    renderGlucoseList();
+  }
+}
+
+
 init();
 </script>
+
+<!-- ══ GLUCOSE MODAL ══ -->
+<div class="overlay" id="glucose-overlay" onclick="closeGlucoseModalOnBg(event)">
+  <div class="modal">
+    <div class="modal-title">🩸 Dodaj pomiar</div>
+    <div class="modal-sub">Wpisz poziom cukru i/lub dawkę insuliny</div>
+    <div class="modal-row">
+      <div class="inline-field">
+        <label>Glukoza <span class="unit">(mg/dL)</span></label>
+        <input type="number" id="g-glucose" placeholder="np. 120" min="20" max="600"/>
+      </div>
+      <div class="inline-field">
+        <label>Data i godzina</label>
+        <input type="datetime-local" id="g-datetime"/>
+      </div>
+    </div>
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Insulina (opcjonalnie)</div>
+    <div class="modal-row">
+      <div class="inline-field">
+        <label>Typ insuliny</label>
+        <select id="g-insulin-type">
+          <option value="">— brak —</option>
+          <option value="bolus_meal">Bolus posiłkowy</option>
+          <option value="bolus_correction">Bolus korekcyjny</option>
+          <option value="basal">Bazowa (długodziałająca)</option>
+        </select>
+      </div>
+      <div class="inline-field">
+        <label>Dawka <span class="unit">(j)</span></label>
+        <input type="number" id="g-insulin-dose" placeholder="np. 4" min="0" step="0.5"/>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="inline-field" style="flex:1">
+        <label>Notatka <span class="unit">(opcj.)</span></label>
+        <input type="text" id="g-notes" placeholder="np. po wysiłku, przed snem…"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeGlucoseModal()">Anuluj</button>
+      <button class="btn btn-primary" onclick="saveGlucoseEntry()">Zapisz</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
