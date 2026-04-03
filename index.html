@@ -4,25 +4,35 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GlucoMeal — Planer dla Diabetyków T1</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet"/>
   <style>
+    
     :root{
-      --bg:#f7f4ef;--surface:#fff;--border:#e8e2d9;--text:#1a1714;
-      --muted:#7a6f66;--accent:#c0533a;--accent-lt:#f5ebe7;
-      --green:#3a7c5a;--green-lt:#e6f2ec;--blue:#3a6a9c;--blue-lt:#e6eef6;
-      --orange:#b86a1a;--orange-lt:#fdf0e0;
-      --radius:14px;--shadow:0 2px 16px rgba(0,0,0,.07);
+      --bg:#f0f4f8;--surface:#ffffff;--border:#dce3ea;--text:#0f1923;
+      --muted:#6b7a8d;--accent:#1a8a6e;--accent-lt:#e6f4f0;
+      --green:#1a8a6e;--green-lt:#e6f4f0;--blue:#2563a8;--blue-lt:#deeaf8;
+      --orange:#c47a1a;--orange-lt:#fdf3e0;
+      --radius:16px;--shadow:0 4px 24px rgba(0,0,0,.08);
+    }
+    @media(prefers-color-scheme:dark){
+      :root{
+        --bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;
+        --muted:#8b949e;--accent:#3fb387;--accent-lt:#1a2e28;
+        --green:#3fb387;--green-lt:#1a2e28;--blue:#58a6ff;--blue-lt:#1a2535;
+        --orange:#d29922;--orange-lt:#2a1f0a;
+        --shadow:0 4px 24px rgba(0,0,0,.4);
+      }
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
     .app{display:none}.screen{display:none}.screen.active{display:block}
 
     /* ── AUTH ── */
     #auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:var(--shadow)}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 44px;width:100%;max-width:420px;box-shadow:var(--shadow)}
     .brand{text-align:center;margin-bottom:32px}
-    .brand-icon{width:52px;height:52px;background:var(--accent);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px}
-    .brand h1{font-family:'DM Serif Display',serif;font-size:26px;letter-spacing:-.3px}
+    .brand-icon{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+    .brand h1{font-family:'Fraunces',serif;font-size:26px;letter-spacing:-.3px}
     .brand p{color:var(--muted);font-size:13px;margin-top:4px}
     .auth-tabs{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:28px}
     .auth-tab{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:inherit;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
@@ -32,7 +42,7 @@
     .field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:15px;color:var(--text);background:var(--bg);transition:border-color .2s;outline:none}
     .field input:focus{border-color:var(--accent);background:var(--surface)}
     .btn{padding:11px 20px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;width:100%}
-    .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#a84530}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:var(--accent);color:#fff;letter-spacing:.01em}.btn-primary:hover{filter:brightness(1.1)}.btn-primary:disabled{opacity:.4;cursor:not-allowed}
     .btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border)}.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
     .btn-danger{background:var(--accent-lt);color:var(--accent);border:none}.btn-danger:hover{background:#f5cec6}
     .btn-sm{padding:7px 14px;font-size:13px;width:auto;border-radius:8px}
@@ -44,13 +54,13 @@
     /* ── APP SHELL ── */
     .app{max-width:720px;margin:0 auto;padding:0 16px 80px}
     header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px;border-bottom:1px solid var(--border);margin-bottom:20px}
-    .header-brand{font-family:'DM Serif Display',serif;font-size:20px;display:flex;align-items:center;gap:10px}
-    .header-brand span{background:var(--accent);color:#fff;width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+    .header-brand{font-family:'Fraunces',serif;font-size:20px;display:flex;align-items:center;gap:10px}
+    .header-brand span{background:linear-gradient(135deg,var(--accent),var(--blue));color:#fff;width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
     .logout-btn{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;padding:6px 10px;border-radius:7px;transition:all .2s}
     .logout-btn:hover{color:var(--accent);background:var(--accent-lt)}
 
     /* ── BOTTOM NAV ── */
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;z-index:50;padding:0 8px 8px}
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;z-index:50;padding:0 8px env(safe-area-inset-bottom,8px);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
     .bottom-nav.visible{display:flex}
     .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-family:inherit;font-size:10px;font-weight:500;border-radius:8px;transition:all .2s;min-width:0}
     .bnav-btn .bico{font-size:20px;line-height:1}
@@ -63,8 +73,8 @@
     .tnav-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.09)}
 
     /* ── CARDS ── */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow)}
-    .card-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow);transition:box-shadow .2s}
+    .card-title{font-family:'Fraunces',serif;font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
     .card-desc{color:var(--muted);font-size:13px;margin-bottom:16px}
 
     /* ── FIELDS ── */
@@ -81,8 +91,8 @@
 
     /* ── STATS BOXES ── */
     .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
-    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
-    .stat-val{font-family:'DM Serif Display',serif;font-size:20px}
+    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;transition:transform .15s}.stat-box:hover{transform:translateY(-1px)}
+    .stat-val{font-family:'Fraunces',serif;font-size:20px}
     .stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
 
     /* ── MACRO ROW ── */
@@ -97,7 +107,7 @@
     .bmi-bar{height:8px;border-radius:4px;background:linear-gradient(to right,#6ab4f5,#5cc97a,#f5c842,#f58a42,#e84e2a);position:relative;margin:10px 0 5px}
     .bmi-needle{position:absolute;top:-4px;width:16px;height:16px;background:var(--text);border:2px solid white;border-radius:50%;transform:translateX(-50%);transition:left .5s ease}
     .bmi-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
-    .bmi-value{font-family:'DM Serif Display',serif;font-size:26px;margin-top:8px}
+    .bmi-value{font-family:'Fraunces',serif;font-size:26px;margin-top:8px}
     .bmi-category{font-size:13px;font-weight:600;margin-top:2px}
 
     /* ── TABLES ── */
@@ -118,9 +128,9 @@
     .day-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
     .nav-arrow{background:none;border:1.5px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--muted);transition:all .2s}
     .nav-arrow:hover{border-color:var(--accent);color:var(--accent)}
-    .day-label{font-family:'DM Serif Display',serif;font-size:18px}
+    .day-label{font-family:'Fraunces',serif;font-size:18px}
 
-    .meal-slot{border:1px solid var(--border);border-radius:11px;margin-bottom:10px;overflow:hidden}
+    .meal-slot{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;transition:box-shadow .2s}.meal-slot:hover{box-shadow:var(--shadow)}
     .meal-slot-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border)}
     .meal-slot-title{font-weight:600;font-size:13px}
     .meal-slot-meta{font-size:11.5px;color:var(--muted)}
@@ -156,9 +166,9 @@
     .calc-result.blue{background:var(--blue-lt);border-color:#b8cfe8}
     .result-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;color:var(--accent)}
     .calc-result.blue .result-label{color:var(--blue)}
-    .result-dose{font-family:'DM Serif Display',serif;font-size:34px;line-height:1;color:var(--accent)}
+    .result-dose{font-family:'Fraunces',serif;font-size:34px;line-height:1;color:var(--accent)}
     .calc-result.blue .result-dose{color:var(--blue)}
-    .result-dose span{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--muted);margin-left:4px}
+    .result-dose span{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;color:var(--muted);margin-left:4px}
     .result-detail{font-size:12px;color:var(--muted);margin-top:7px;padding-top:7px;border-top:1px solid #e8c4bb}
     .calc-result.blue .result-detail{border-top-color:#b8cfe8}
     .combined-result{margin-top:16px;padding:18px 20px;background:linear-gradient(135deg,var(--accent-lt),var(--blue-lt));border:1.5px solid #d4c4d8;border-radius:12px;display:none}
@@ -167,9 +177,9 @@
     .combined-breakdown{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
     .combined-item{flex:1;min-width:100px;background:rgba(255,255,255,.65);border-radius:9px;padding:10px 12px}
     .combined-item-label{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
-    .combined-item-val{font-family:'DM Serif Display',serif;font-size:22px}
+    .combined-item-val{font-family:'Fraunces',serif;font-size:22px}
     .combined-total{display:flex;align-items:baseline;gap:6px;padding-top:10px;border-top:1.5px solid rgba(106,58,106,.15)}
-    .combined-total-val{font-family:'DM Serif Display',serif;font-size:30px;color:#6a3a6a}
+    .combined-total-val{font-family:'Fraunces',serif;font-size:30px;color:#6a3a6a}
     .combined-total-unit{font-size:14px;color:var(--muted)}
     .combined-note{font-size:12px;color:var(--muted);margin-top:6px}
     .disclaimer{margin-top:12px;padding:10px 13px;background:#fffbf0;border:1px solid #f0dfa0;border-radius:9px;font-size:12px;color:#7a6a20;line-height:1.5}
@@ -181,7 +191,7 @@
     .legend-dot{width:9px;height:9px;border-radius:50%}
     .chart-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
     .chart-sum-box{background:var(--bg);border-radius:10px;padding:11px;text-align:center}
-    .chart-sum-val{font-family:'DM Serif Display',serif;font-size:19px}
+    .chart-sum-val{font-family:'Fraunces',serif;font-size:19px}
     .chart-sum-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
 
     /* ── FOOD DB ── */
@@ -210,7 +220,7 @@
     .overlay.open{opacity:1;pointer-events:all}
     .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:540px;transform:translateY(16px);transition:transform .25s;max-height:92vh;overflow-y:auto}
     .overlay.open .modal{transform:translateY(0)}
-    .modal-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:4px}
+    .modal-title{font-family:'Fraunces',serif;font-size:20px;margin-bottom:4px}
     .modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
     .modal-section{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)}
     .modal-food-search{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:14px;background:var(--bg);outline:none;margin-bottom:6px;transition:border-color .2s}
@@ -235,7 +245,7 @@
     /* ── DIARY ── */
     .diary-day{margin-bottom:16px}
     .diary-day-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .diary-day-title{font-family:'DM Serif Display',serif;font-size:16px}
+    .diary-day-title{font-family:'Fraunces',serif;font-size:16px}
     .diary-day-meta{font-size:12px;color:var(--muted)}
     .diary-entry{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:6px}
     .diary-entry-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
@@ -252,7 +262,7 @@
     .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:16px}
     .recipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:box-shadow .2s}
     .recipe-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1)}
-    .recipe-card-hero{height:80px;display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--bg)}
+    .recipe-card-hero{height:160px;display:flex;align-items:center;justify-content:center;font-size:52px;background:var(--bg);overflow:hidden;position:relative}.recipe-card-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.92}.recipe-card-hero .hero-emoji{position:relative;z-index:1;font-size:52px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3))}
     .recipe-card-body{padding:14px 16px}
     .recipe-card-title{font-weight:600;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .recipe-card-meta{font-size:11.5px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
@@ -261,8 +271,8 @@
     .recipe-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
     .recipe-panel{display:none}.recipe-panel.active{display:block}
     .recipe-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px}
-    .recipe-detail-hero{font-size:52px;text-align:center;margin-bottom:12px}
-    .recipe-detail-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px}
+    .recipe-detail-hero{font-size:52px;text-align:center;margin-bottom:12px;height:200px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;position:relative;background:var(--bg)}.recipe-detail-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.recipe-detail-hero .hero-emoji{position:relative;z-index:1;font-size:64px;filter:drop-shadow(0 2px 12px rgba(0,0,0,.4))}
+    .recipe-detail-title{font-family:'Fraunces',serif;font-size:22px;margin-bottom:6px}
     .recipe-detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
     .recipe-ingredient{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px}
     .recipe-ingredient:last-child{border-bottom:none}
@@ -275,7 +285,7 @@
     .recipe-step-text{font-size:13.5px;line-height:1.6;color:var(--text)}
     .recipe-macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
     .recipe-macro-box{background:var(--bg);border-radius:9px;padding:10px;text-align:center}
-    .recipe-macro-val{font-family:'DM Serif Display',serif;font-size:18px}
+    .recipe-macro-val{font-family:'Fraunces',serif;font-size:18px}
     .recipe-macro-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
     .recipe-search-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
     .recipe-search-row .search-wrap{flex:1;min-width:180px;margin-bottom:0}
@@ -1592,7 +1602,7 @@ function renderStats(){
 // Built-in sample recipes
 const BUILTIN_RECIPES = [
   {
-    id:'builtin-1', emoji:'🥣', name:'Owsianka bananowa', cat:'Śniadania',
+    id:'builtin-1', emoji:'🥣', name:'Owsianka bananowa', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&q=80',
     time:10, servings:1, carbs:52, protein:9, fat:5, kcal:290,
     ingredients:[
       {name:'Płatki owsiane',amount:'60g',carbs:36},
@@ -1603,7 +1613,7 @@ const BUILTIN_RECIPES = [
     steps:['Zagotuj mleko w rondelku.','Wsyp płatki owsiane i gotuj na małym ogniu 5 minut, mieszając.','Pokrój banana w plasterki i dodaj na wierzch.','Skrop miodem przed podaniem.']
   },
   {
-    id:'builtin-2', emoji:'🍳', name:'Jajecznica z warzywami', cat:'Śniadania',
+    id:'builtin-2', emoji:'🍳', name:'Jajecznica z warzywami', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80',
     time:10, servings:1, carbs:4, protein:18, fat:14, kcal:220,
     ingredients:[
       {name:'Jajka kurze',amount:'3 szt.',carbs:0},
@@ -1614,7 +1624,7 @@ const BUILTIN_RECIPES = [
     steps:['Pokrój paprykę w drobną kostkę.','Rozgrzej oliwę na patelni, dodaj paprykę i smaż 2 minuty.','Dodaj szpinak, chwilę podduś.','Wbij jajka, mieszaj do ścięcia. Dopraw solą i pieprzem.']
   },
   {
-    id:'builtin-3', emoji:'🍗', name:'Kurczak z ryżem i brokułami', cat:'Obiady',
+    id:'builtin-3', emoji:'🍗', name:'Kurczak z ryżem i brokułami', cat:'Obiady', photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
     time:30, servings:2, carbs:48, protein:38, fat:6, kcal:405,
     ingredients:[
       {name:'Pierś kurczaka',amount:'200g',carbs:0},
@@ -1625,7 +1635,7 @@ const BUILTIN_RECIPES = [
     steps:['Ugotuj ryż według instrukcji na opakowaniu.','Kurczaka pokrój w kostkę, zamarynuj w sosie sojowym 10 min.','Ugotuj brokuły na parze 8 minut.','Smaż kurczaka na patelni 8–10 minut do zarumienienia.','Podaj razem na talerzu.']
   },
   {
-    id:'builtin-4', emoji:'🥗', name:'Sałatka z tuńczykiem', cat:'Obiady',
+    id:'builtin-4', emoji:'🥗', name:'Sałatka z tuńczykiem', cat:'Obiady', photo:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
     time:10, servings:1, carbs:8, protein:28, fat:8, kcal:215,
     ingredients:[
       {name:'Tuńczyk w wodzie',amount:'1 puszka (150g)',carbs:0},
@@ -1638,7 +1648,7 @@ const BUILTIN_RECIPES = [
     steps:['Osącz tuńczyka z zalewy.','Pokrój pomidora i ogórka.','Wymieszaj wszystkie składniki w misce.','Skrop oliwą, dopraw solą i pieprzem.']
   },
   {
-    id:'builtin-5', emoji:'🍲', name:'Zupa krem z brokułów', cat:'Zupy',
+    id:'builtin-5', emoji:'🍲', name:'Zupa krem z brokułów', cat:'Zupy', photo:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80',
     time:25, servings:3, carbs:14, protein:6, fat:4, kcal:115,
     ingredients:[
       {name:'Brokuły',amount:'500g',carbs:20},
@@ -1649,7 +1659,7 @@ const BUILTIN_RECIPES = [
     steps:['Pokrój brokuły i ziemniaki.','Gotuj w bulionie 15 minut do miękkości.','Zblenduj na gładki krem.','Dodaj śmietanę, dopraw solą i gałką muszkatołową.']
   },
   {
-    id:'builtin-6', emoji:'🥞', name:'Naleśniki proteinowe', cat:'Śniadania',
+    id:'builtin-6', emoji:'🥞', name:'Naleśniki proteinowe', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80',
     time:20, servings:2, carbs:30, protein:22, fat:8, kcal:280,
     ingredients:[
       {name:'Płatki owsiane (zmielone)',amount:'60g',carbs:36},
@@ -1660,7 +1670,7 @@ const BUILTIN_RECIPES = [
     steps:['Zmiksuj wszystkie składniki blenderem na gładkie ciasto.','Rozgrzej patelnię, smaż naleśniki po 2 minuty z każdej strony.','Podaj z owocami lub jogurtem naturalnym.']
   },
   {
-    id:'builtin-7', emoji:'🍝', name:'Makaron z łososiem', cat:'Obiady',
+    id:'builtin-7', emoji:'🍝', name:'Makaron z łososiem', cat:'Obiady', photo:'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80',
     time:20, servings:2, carbs:50, protein:28, fat:14, kcal:440,
     ingredients:[
       {name:'Makaron pszenny',amount:'150g suchego',carbs:75},
@@ -1672,7 +1682,7 @@ const BUILTIN_RECIPES = [
     steps:['Ugotuj makaron al dente.','Łososia pokrój w kawałki, smaż na patelni 5 minut.','Dodaj czosnek, szpinak, śmietanę. Duś 3 minuty.','Wymieszaj z makaronem, dopraw solą i pieprzem.']
   },
   {
-    id:'builtin-8', emoji:'🍮', name:'Pudding chia z owocami', cat:'Desery',
+    id:'builtin-8', emoji:'🍮', name:'Pudding chia z owocami', cat:'Desery', photo:'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=600&q=80',
     time:5, servings:1, carbs:28, protein:8, fat:9, kcal:230,
     ingredients:[
       {name:'Nasiona chia',amount:'30g',carbs:4},
@@ -1750,8 +1760,9 @@ function renderMyRecipes(){
 function recipeCardHTML(r){
   const icr = userProfile.icr;
   const dose = icr && r.carbs ? r1(r.carbs/icr) : null;
+  const heroImg = r.photo ? `<img src="${r.photo}" alt="" loading="lazy" onerror="this.style.display='none'"/>` : '';
   return `<div class="recipe-card" onclick="openRecipeDetail('${r.id}')">
-    <div class="recipe-card-hero">${r.emoji||'🍽️'}</div>
+    <div class="recipe-card-hero">${heroImg}<span class="hero-emoji">${r.emoji||'🍽️'}</span></div>
     <div class="recipe-card-body">
       <div class="recipe-card-title">${esc(r.name)}</div>
       <div class="recipe-card-meta">
@@ -1782,7 +1793,7 @@ function openRecipeDetail(id){
       <button class="btn btn-secondary btn-sm" onclick="closeRecipeDetail()">← Wróć</button>
       <button class="btn btn-primary btn-sm" onclick="addRecipeToPlan('${recipe.id}')">+ Dodaj do planu</button>
     </div>
-    <div class="recipe-detail-hero" style="margin-top:12px">${recipe.emoji||'🍽️'}</div>
+    <div class="recipe-detail-hero" style="margin-top:12px">${recipe.photo?'<img src="'+recipe.photo+'" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display=none"/>':''}<span class="hero-emoji">${recipe.emoji||'🍽️'}</span></div>
     <div class="recipe-detail-title">${esc(recipe.name)}</div>
     <div class="recipe-detail-badges">
       <span class="badge badge-green">${recipe.cat}</span>
