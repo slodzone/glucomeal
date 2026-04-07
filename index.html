@@ -52,25 +52,41 @@
     .msg.success{background:var(--green-lt);color:var(--green);border:1px solid #b8deca;display:block}
 
     /* ── APP SHELL ── */
-    .app{max-width:720px;margin:0 auto;padding:0 16px 80px}
-    header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px;border-bottom:1px solid var(--border);margin-bottom:20px}
-    .header-brand{font-family:'Fraunces',serif;font-size:20px;display:flex;align-items:center;gap:10px}
-    .header-brand span{background:linear-gradient(135deg,var(--accent),var(--blue));color:#fff;width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-    .logout-btn{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;padding:6px 10px;border-radius:7px;transition:all .2s}
-    .logout-btn:hover{color:var(--accent);background:var(--accent-lt)}
+    .app-layout{display:flex;min-height:100vh}
+    .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:40;overflow-y:auto}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+    .sidebar-brand-icon{background:linear-gradient(135deg,var(--accent),var(--blue));color:#fff;width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.15);flex-shrink:0}
+    .sidebar-brand-name{font-family:'Fraunces',serif;font-size:18px;color:var(--text)}
+    .sidebar-nav{flex:1;padding:10px 10px;display:flex;flex-direction:column;gap:2px}
+    .snav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;background:transparent;border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;text-align:left;width:100%}
+    .snav-btn:hover{background:var(--bg);color:var(--text)}
+    .snav-btn.active{background:var(--accent-lt);color:var(--accent);font-weight:600}
+    .snav-btn .sico{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+    .snav-btn .slbl{flex:1}
+    .sidebar-footer{padding:12px 10px;border-top:1px solid var(--border)}
+    .logout-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;background:transparent;border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;width:100%}
+    .logout-btn:hover{background:var(--accent-lt);color:var(--accent)}
+    .app{flex:1;margin-left:220px;padding:24px 28px 40px;max-width:760px}
+    .app-header-mobile{display:none}
 
-    /* ── BOTTOM NAV ── */
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;z-index:50;padding:0 8px env(safe-area-inset-bottom,8px);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    /* ── BOTTOM NAV (mobile) ── */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;z-index:50;padding:4px 4px env(safe-area-inset-bottom,4px);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
     .bottom-nav.visible{display:flex}
-    .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-family:inherit;font-size:10px;font-weight:500;border-radius:8px;transition:all .2s;min-width:0}
-    .bnav-btn .bico{font-size:20px;line-height:1}
+    .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-family:inherit;font-size:9.5px;font-weight:500;border-radius:8px;transition:all .2s;min-width:0}
+    .bnav-btn .bico{font-size:22px;line-height:1.2}
     .bnav-btn.active{color:var(--accent)}
-    .bnav-btn.active .bico{transform:scale(1.1)}
+    .bnav-btn.active .bico{transform:scale(1.12)}
 
-    /* top nav for wider screens */
-    .top-nav{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:24px;overflow-x:auto}
-    .tnav-btn{flex:1;padding:8px 4px;border:none;background:transparent;border-radius:7px;font-family:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;min-width:44px}
-    .tnav-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.09)}
+    /* ── MORE DRAWER (mobile) ── */
+    .more-drawer{position:fixed;bottom:72px;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:49;padding:8px 12px 12px;display:none;flex-wrap:wrap;gap:4px;backdrop-filter:blur(16px)}
+    .more-drawer.open{display:flex}
+    .more-item{flex:1;min-width:80px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:none;background:var(--bg);border-radius:10px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;color:var(--muted);transition:all .2s}
+    .more-item:hover,.more-item.active{background:var(--accent-lt);color:var(--accent)}
+    .more-item .mico{font-size:20px}
+
+    /* top nav hidden — replaced by sidebar */
+    .top-nav{display:none}
+    .tnav-btn{}
 
     /* ── CARDS ── */
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow);transition:box-shadow .2s}
@@ -333,18 +349,23 @@
     .tir-segment{height:100%;border-radius:3px;transition:width .5s}
     .add-glucose-btn{display:flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:filter .2s;white-space:nowrap}
     .add-glucose-btn:hover{filter:brightness(1.1)}
-    @media(max-width:540px){
+    @media(max-width:768px){
       .profile-grid{grid-template-columns:1fr}
       .auth-card{padding:28px 20px}
       .week-grid{grid-template-columns:repeat(4,1fr)}
       .combined-breakdown{flex-direction:column}
+      /* mobile: hide sidebar, show bottom nav */
+      .sidebar{display:none}
+      .app{margin-left:0;padding:16px 14px 84px}
       .bottom-nav.visible{display:flex}
-      .top-nav{display:none}
+      .app-header-mobile{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+      .app-header-mobile .mob-brand{font-family:'Fraunces',serif;font-size:18px;display:flex;align-items:center;gap:8px}
+      .app-header-mobile .mob-icon{background:linear-gradient(135deg,var(--accent),var(--blue));color:#fff;width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
     }
-    @media(min-width:541px){
+    @media(min-width:769px){
       .bottom-nav{display:none!important}
-      .top-nav{display:flex}
-      .app{padding-bottom:40px}
+      .more-drawer{display:none!important}
+      .sidebar{display:flex}
     }
   </style>
 </head>
@@ -377,25 +398,53 @@
 </div>
 
 <!-- ══ APP ══ -->
-<div class="app" id="main-app">
-  <header>
-    <div class="header-brand"><span>🩸</span> GlucoMeal</div>
-    <button class="logout-btn" onclick="logout()">Wyloguj →</button>
-  </header>
+<div class="app-layout" id="main-app" style="display:none">
 
-  <!-- top nav (desktop) -->
-  <nav class="top-nav" id="top-nav">
-    <button class="tnav-btn active" data-screen="dashboard">Pulpit</button>
-    <button class="tnav-btn" data-screen="plan">Plan</button>
-    <button class="tnav-btn" data-screen="diary">Dziennik</button>
-    <button class="tnav-btn" data-screen="calculator">Kalkulator</button>
-    <button class="tnav-btn" data-screen="recipes">Przepisy</button>
-    <button class="tnav-btn" data-screen="glucose">Glukoza</button>
-    <button class="tnav-btn" data-screen="stats">Statystyki</button>
-    <button class="tnav-btn" data-screen="foods">Produkty</button>
-    <button class="tnav-btn" data-screen="profile">Profil</button>
-    <button class="tnav-btn" data-screen="info">Info</button>
-  </nav>
+  <!-- SIDEBAR (desktop) -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">🩸</div>
+      <div class="sidebar-brand-name">GlucoMeal</div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="snav-btn active" data-screen="dashboard"><span class="sico">🏠</span><span class="slbl">Pulpit</span></button>
+      <button class="snav-btn" data-screen="glucose"><span class="sico">🩸</span><span class="slbl">Glukoza</span></button>
+      <button class="snav-btn" data-screen="plan"><span class="sico">📅</span><span class="slbl">Plan posiłków</span></button>
+      <button class="snav-btn" data-screen="diary"><span class="sico">📓</span><span class="slbl">Dziennik</span></button>
+      <button class="snav-btn" data-screen="calculator"><span class="sico">🧮</span><span class="slbl">Kalkulator</span></button>
+      <button class="snav-btn" data-screen="recipes"><span class="sico">🍳</span><span class="slbl">Przepisy</span></button>
+      <button class="snav-btn" data-screen="stats"><span class="sico">📈</span><span class="slbl">Statystyki</span></button>
+      <button class="snav-btn" data-screen="foods"><span class="sico">🥦</span><span class="slbl">Produkty</span></button>
+      <button class="snav-btn" data-screen="profile"><span class="sico">👤</span><span class="slbl">Profil</span></button>
+      <button class="snav-btn" data-screen="info"><span class="sico">ℹ️</span><span class="slbl">Info</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()"><span style="font-size:16px">→</span> Wyloguj</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="app" id="app-content">
+
+    <!-- Mobile header -->
+    <div class="app-header-mobile">
+      <div class="mob-brand"><span class="mob-icon">🩸</span> GlucoMeal</div>
+      <button class="logout-btn" onclick="logout()" style="padding:6px 10px;font-size:13px">Wyloguj →</button>
+    </div>
+
+    <!-- top nav (hidden, kept for JS compat) -->
+    <nav class="top-nav" id="top-nav" style="display:none">
+      <button class="tnav-btn active" data-screen="dashboard">Pulpit</button>
+      <button class="tnav-btn" data-screen="glucose">Glukoza</button>
+      <button class="tnav-btn" data-screen="plan">Plan</button>
+      <button class="tnav-btn" data-screen="diary">Dziennik</button>
+      <button class="tnav-btn" data-screen="calculator">Kalkulator</button>
+      <button class="tnav-btn" data-screen="recipes">Przepisy</button>
+      <button class="tnav-btn" data-screen="stats">Statystyki</button>
+      <button class="tnav-btn" data-screen="foods">Produkty</button>
+      <button class="tnav-btn" data-screen="profile">Profil</button>
+      <button class="tnav-btn" data-screen="info">Info</button>
+    </nav>
 
   <!-- ── DASHBOARD ── -->
   <div class="screen active" id="screen-dashboard">
@@ -803,17 +852,24 @@
     </div>
   </div>
 
-</div><!-- end .app -->
+  </div><!-- end .app content -->
+</div><!-- end .app-layout -->
+<!-- More drawer (mobile) -->
+<div class="more-drawer" id="more-drawer">
+  <button class="more-item" data-screen="calculator"><span class="mico">🧮</span>Kalkulator</button>
+  <button class="more-item" data-screen="recipes"><span class="mico">🍳</span>Przepisy</button>
+  <button class="more-item" data-screen="stats"><span class="mico">📈</span>Statystyki</button>
+  <button class="more-item" data-screen="foods"><span class="mico">🥦</span>Produkty</button>
+  <button class="more-item" data-screen="info"><span class="mico">ℹ️</span>Info</button>
+</div>
+
 <nav class="bottom-nav" id="bottom-nav">
   <button class="bnav-btn active" data-screen="dashboard"><span class="bico">🏠</span>Pulpit</button>
+  <button class="bnav-btn" data-screen="glucose"><span class="bico">🩸</span>Glukoza</button>
   <button class="bnav-btn" data-screen="plan"><span class="bico">📅</span>Plan</button>
   <button class="bnav-btn" data-screen="diary"><span class="bico">📓</span>Dziennik</button>
-  <button class="bnav-btn" data-screen="calculator"><span class="bico">🧮</span>Kalkulator</button>
-  <button class="bnav-btn" data-screen="recipes"><span class="bico">🍳</span>Przepisy</button>
-  <button class="bnav-btn" data-screen="foods"><span class="bico">🥦</span>Produkty</button>
-  <button class="bnav-btn" data-screen="glucose"><span class="bico">🩸</span>Glukoza</button>
-  <button class="bnav-btn" data-screen="stats"><span class="bico">📈</span>Statystyki</button>
   <button class="bnav-btn" data-screen="profile"><span class="bico">👤</span>Profil</button>
+  <button class="bnav-btn" id="more-btn" onclick="toggleMoreDrawer()"><span class="bico">☰</span>Więcej</button>
 </nav>
 
 <!-- ══ MEAL MODAL ══ -->
@@ -1086,12 +1142,13 @@ function showScreen(name){
   if(!el) return;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
-  document.querySelectorAll('.tnav-btn').forEach(b=>{
+  // sync all nav buttons
+  document.querySelectorAll('.tnav-btn,.bnav-btn,.snav-btn,.more-item').forEach(b=>{
     b.classList.toggle('active', b.dataset.screen===name);
   });
-  document.querySelectorAll('.bnav-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.screen===name);
-  });
+  // close more drawer
+  const md = document.getElementById('more-drawer');
+  if(md) md.classList.remove('open');
   if(name==='stats')   renderStats();
   if(name==='diary')   renderDiary();
   if(name==='foods')   { loadSharedFoods().then(renderFoodsMain); }
@@ -1100,9 +1157,14 @@ function showScreen(name){
   if(name==='glucose') initGlucoseScreen();
 }
 
-// wire nav buttons (no inline onclick for nav — avoids event issues)
-document.querySelectorAll('.tnav-btn, .bnav-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=> showScreen(btn.dataset.screen));
+function toggleMoreDrawer(){
+  const md = document.getElementById('more-drawer');
+  md.classList.toggle('open');
+}
+
+// wire nav buttons
+document.querySelectorAll('.tnav-btn,.bnav-btn,.snav-btn,.more-item').forEach(btn=>{
+  if(btn.dataset.screen) btn.addEventListener('click', ()=> showScreen(btn.dataset.screen));
 });
 
 // ── INIT ──
@@ -1120,11 +1182,12 @@ function showAuthPage(){
   document.getElementById('auth-page').style.display='flex';
   document.getElementById('main-app').style.display='none';
   document.getElementById('bottom-nav').style.display='none';
+  const md=document.getElementById('more-drawer'); if(md) md.classList.remove('open');
 }
 
 async function bootApp(){
   document.getElementById('auth-page').style.display='none';
-  document.getElementById('main-app').style.display='block';
+  document.getElementById('main-app').style.display='flex';
   document.getElementById('bottom-nav').classList.add('visible');
   await Promise.all([loadProfile(), loadMealEntries(), loadSharedFoods(), loadGlucoseEntries()]);
   renderDailyPlan(); renderWeeklyPlan(); renderTodaySummary(); renderDiary(); renderFoodsMain();
