@@ -445,8 +445,6 @@
       <button class="tnav-btn" data-screen="profile">Profil</button>
       <button class="tnav-btn" data-screen="info">Info</button>
     </nav>
-
-  <!-- ── DASHBOARD ── -->
   <div class="screen active" id="screen-dashboard">
     <div class="stats-row">
       <div class="stat-box"><div class="stat-val" id="dash-weight">—</div><div class="stat-lbl">Waga kg</div></div>
@@ -1192,6 +1190,13 @@ async function bootApp(){
   await Promise.all([loadProfile(), loadMealEntries(), loadSharedFoods(), loadGlucoseEntries()]);
   renderDailyPlan(); renderWeeklyPlan(); renderTodaySummary(); renderDiary(); renderFoodsMain();
   prefillCalc();
+  // explicitly activate dashboard and sync all nav buttons
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const dash = document.getElementById('screen-dashboard');
+  if(dash) dash.classList.add('active');
+  document.querySelectorAll('.tnav-btn,.bnav-btn,.snav-btn,.more-item').forEach(b=>{
+    b.classList.toggle('active', b.dataset.screen==='dashboard');
+  });
 }
 
 // ── AUTH ──
