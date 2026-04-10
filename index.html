@@ -623,23 +623,65 @@
   <div class="screen" id="screen-calculator">
     <div class="card">
       <div class="card-title">🧮 Kalkulator insuliny</div>
-      <div class="card-desc">Bolus posiłkowy, korekta glikemii lub obie dawki łącznie.</div>
+      <div class="card-desc">Bolus posiłkowy, korekta glikemii, bolus przedłużony (białko+tłuszcz) — Metoda Warszawska.</div>
       <div class="calc-tabs">
         <button class="calc-tab active" id="ctab-bolus" onclick="switchCalcTab('bolus')">🍽️ Bolus</button>
+        <button class="calc-tab" id="ctab-fpu" onclick="switchCalcTab('fpu')">🥩 Białko+Tłuszcz</button>
         <button class="calc-tab" id="ctab-correction" onclick="switchCalcTab('correction')">📐 Korekta</button>
         <button class="calc-tab" id="ctab-combined" onclick="switchCalcTab('combined')">⚡ Łącznie</button>
       </div>
+
+      <!-- BOLUS -->
       <div class="calc-panel active" id="calc-bolus">
         <div class="row" style="margin-bottom:10px">
           <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="b-carbs" placeholder="np. 60" min="0" oninput="calcBolus()"/></div>
           <div class="inline-field"><label>ICR <span class="unit">(g/j)</span></label><input type="number" id="b-icr" placeholder="z profilu" min="1" oninput="calcBolus()"/></div>
         </div>
         <div class="calc-result" id="bolus-result">
-          <div class="result-label">Bolus posiłkowy</div>
+          <div class="result-label">Bolus posiłkowy (normalny)</div>
           <div class="result-dose" id="bolus-dose">0<span>jednostek</span></div>
           <div class="result-detail" id="bolus-detail"></div>
         </div>
       </div>
+
+      <!-- FPU — Metoda Warszawska -->
+      <div class="calc-panel" id="calc-fpu">
+        <div style="padding:12px 14px;background:var(--blue-lt);border:1px solid var(--blue);border-radius:12px;margin-bottom:14px;font-size:13px;color:var(--blue);line-height:1.6">
+          <strong style="display:block;margin-bottom:4px">📚 Metoda Warszawska (Pańkowska)</strong>
+          Białko i tłuszcz powodują <strong>opóźniony wzrost glikemii</strong> (2–8h po posiłku). Oblicz dodatkowy <strong>bolus przedłużony</strong> oparty na FPU (Fat-Protein Units). 1 FPU = 100 kcal z białka i tłuszczu.
+        </div>
+        <div class="row" style="margin-bottom:10px">
+          <div class="inline-field"><label>Białko <span class="unit">(g)</span></label><input type="number" id="fpu-protein" placeholder="np. 25" min="0" oninput="calcFPU()"/></div>
+          <div class="inline-field"><label>Tłuszcz <span class="unit">(g)</span></label><input type="number" id="fpu-fat" placeholder="np. 15" min="0" oninput="calcFPU()"/></div>
+          <div class="inline-field"><label>ICR <span class="unit">(g/j)</span></label><input type="number" id="fpu-icr" placeholder="z profilu" min="1" oninput="calcFPU()"/></div>
+        </div>
+        <div class="calc-result" id="fpu-result" style="background:var(--orange-lt);border-color:var(--orange)">
+          <div class="result-label" style="color:var(--orange)">Bolus przedłużony (białko + tłuszcz)</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px">
+            <div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Dawka</div>
+              <div class="result-dose" id="fpu-dose" style="color:var(--orange)">0<span>jednostek</span></div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Czas przedłużenia</div>
+              <div class="result-dose" id="fpu-duration" style="color:var(--orange);font-size:28px">0<span>godzin</span></div>
+            </div>
+          </div>
+          <div class="result-detail" id="fpu-detail" style="border-top-color:var(--orange);opacity:.8"></div>
+        </div>
+        <div style="margin-top:12px;background:var(--bg);border-radius:10px;padding:12px;font-size:12.5px;color:var(--muted)">
+          <strong style="color:var(--text);display:block;margin-bottom:6px">Czas przedłużenia według PTD:</strong>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center">
+            <div style="background:var(--surface);border-radius:8px;padding:6px 4px"><div style="font-weight:700;color:var(--text)">1 FPU</div><div>1h</div></div>
+            <div style="background:var(--surface);border-radius:8px;padding:6px 4px"><div style="font-weight:700;color:var(--text)">2 FPU</div><div>2h</div></div>
+            <div style="background:var(--surface);border-radius:8px;padding:6px 4px"><div style="font-weight:700;color:var(--text)">3 FPU</div><div>3h</div></div>
+            <div style="background:var(--surface);border-radius:8px;padding:6px 4px"><div style="font-weight:700;color:var(--text)">4 FPU</div><div>4h</div></div>
+            <div style="background:var(--surface);border-radius:8px;padding:6px 4px"><div style="font-weight:700;color:var(--text)">≥5 FPU</div><div>5h</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KOREKTA -->
       <div class="calc-panel" id="calc-correction">
         <div class="row" style="margin-bottom:10px">
           <div class="inline-field"><label>Aktualny cukier <span class="unit">(mg/dL)</span></label><input type="number" id="c-current" placeholder="np. 180" min="0" oninput="calcCorrection()"/></div>
@@ -653,10 +695,12 @@
           <div class="result-dose" id="correction-dose">0<span>jednostek</span></div>
           <div class="result-detail" id="correction-detail"></div>
         </div>
-        <div style="margin-top:12px;padding:10px 13px;background:var(--blue-lt);border:1px solid #b8cfe8;border-radius:9px;font-size:12.5px;color:var(--blue);line-height:1.6">
+        <div style="margin-top:12px;padding:10px 13px;background:var(--blue-lt);border:1px solid var(--blue);border-radius:9px;font-size:12.5px;color:var(--blue);line-height:1.6">
           <strong style="display:block;margin-bottom:2px">ℹ️ Wzór:</strong>(Aktualny − Docelowy) ÷ ISF = Dawka korekty
         </div>
       </div>
+
+      <!-- ŁĄCZNIE -->
       <div class="calc-panel" id="calc-combined">
         <div class="row" style="margin-bottom:10px">
           <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="x-carbs" placeholder="np. 60" min="0" oninput="calcCombined()"/></div>
@@ -683,8 +727,10 @@
           <div class="combined-note" id="x-note"></div>
         </div>
       </div>
-      <div class="disclaimer" style="margin-top:12px"><strong>⚠️ Ważna informacja</strong>Zawsze stosuj dawkowanie zalecone przez lekarza.</div>
+
+      <div class="disclaimer" style="margin-top:12px"><strong>⚠️ Ważna informacja</strong>Zawsze stosuj dawkowanie zalecone przez lekarza. Kalkulator FPU oparty na Metodzie Warszawskiej (Pańkowska et al.).</div>
     </div>
+
     <div class="card">
       <div class="card-title">📖 Słownik</div>
       <table class="info-table">
@@ -692,7 +738,9 @@
         <tbody>
           <tr><td><strong>ICR</strong></td><td>Gramy węglowodanów na 1j insuliny</td><td>8–15 g/j</td></tr>
           <tr><td><strong>ISF</strong></td><td>Obniżenie cukru przez 1j insuliny</td><td>30–60 mg/dL</td></tr>
+          <tr><td><strong>FPU</strong></td><td>Fat-Protein Unit = 100 kcal z białka i tłuszczu</td><td>—</td></tr>
           <tr><td><strong>Bolus</strong></td><td>Insulina na węglowodany z posiłku</td><td>—</td></tr>
+          <tr><td><strong>Bolus przedłużony</strong></td><td>Insulina na białko+tłuszcz, podawana stopniowo</td><td>1–5h</td></tr>
           <tr><td><strong>Korekta</strong></td><td>Insulina na zbyt wysoki cukier</td><td>—</td></tr>
         </tbody>
       </table>
@@ -1756,7 +1804,7 @@ async function addSharedFood(){
 // ── CALCULATORS ──
 function prefillCalc(){
   const {icr,isf,target_glucose}=userProfile;
-  if(icr){ ['b-icr','x-icr'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.placeholder=icr+' (z profilu)'}); }
+  if(icr){ ['b-icr','x-icr','fpu-icr'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.placeholder=icr+' (z profilu)'}); }
   if(isf){ ['c-isf','x-isf'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.placeholder=isf+' (z profilu)'}); }
   if(target_glucose){ ['c-target','x-target'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.placeholder=target_glucose+' (z profilu)'}); }
 }
@@ -1779,6 +1827,54 @@ function calcBolus(){
   const dose=r1(carbs/icr); res.classList.add('visible');
   document.getElementById('bolus-dose').innerHTML=`${dose}<span>jednostek</span>`;
   document.getElementById('bolus-detail').textContent=`${carbs}g ÷ ICR ${icr} = ${dose} j.`;
+}
+
+// ── Metoda Warszawska (Pańkowska) — FPU ──
+// FPU = (białko×4 kcal + tłuszcz×9 kcal) / 100
+// Dawka FPU = FPU × (10/ICR)  [bo 1 FPU = 10g ekw. węgl.]
+// Czas: 1FPU→1h, 2FPU→2h, 3FPU→3h, 4FPU→4h, ≥5FPU→5h
+function calcFPU(){
+  const protein = getV('fpu-protein')||0;
+  const fat     = getV('fpu-fat')||0;
+  const icr     = getVP('fpu-icr','icr');
+  const res     = document.getElementById('fpu-result');
+
+  if((!protein && !fat) || protein<0 || fat<0){ res.classList.remove('visible'); return; }
+  if(!icr){ res.classList.add('visible');
+    document.getElementById('fpu-dose').innerHTML='—<span>ustaw ICR w Profilu</span>';
+    document.getElementById('fpu-duration').innerHTML='—<span>godzin</span>';
+    document.getElementById('fpu-detail').textContent=''; return;
+  }
+
+  // kalorie z białka i tłuszczu
+  const kcalProtein = protein * 4;
+  const kcalFat     = fat * 9;
+  const kcalFP      = kcalProtein + kcalFat;
+
+  // FPU = kcal z B+T / 100
+  const fpu = kcalFP / 100;
+
+  if(fpu < 1){
+    res.classList.add('visible');
+    document.getElementById('fpu-dose').innerHTML=`0<span>jednostek</span>`;
+    document.getElementById('fpu-duration').innerHTML=`—<span>godzin</span>`;
+    document.getElementById('fpu-detail').textContent=`FPU = ${r1(fpu)} — poniżej 1 FPU, bolus przedłużony nie jest potrzebny.`;
+    return;
+  }
+
+  // 1 FPU = ekwiwalent 10g węglowodanów
+  const carbEquiv = fpu * 10;
+  const dose = r1(carbEquiv / icr);
+
+  // czas przedłużenia
+  const fpuRound = Math.min(5, Math.round(fpu));
+  const hours = fpuRound;
+
+  res.classList.add('visible');
+  document.getElementById('fpu-dose').innerHTML=`${dose}<span>jednostek</span>`;
+  document.getElementById('fpu-duration').innerHTML=`${hours}<span>godzin</span>`;
+  document.getElementById('fpu-detail').textContent=
+    `Białko: ${protein}g × 4 = ${kcalProtein} kcal | Tłuszcz: ${fat}g × 9 = ${kcalFat} kcal | Suma: ${kcalFP} kcal | FPU: ${r1(fpu)} | Ekw. węgl: ${r1(carbEquiv)}g ÷ ICR ${icr} = ${dose}j przez ${hours}h`;
 }
 
 function calcCorrection(){
@@ -2082,6 +2178,70 @@ const BUILTIN_RECIPES = [
       {name:'Masło orzechowe',amount:'3 łyżki',carbs:9},
     ],
     steps:['Rozgrzej piekarnik do 180C.','Zblenduj fasolę na gładką masę.','Wymieszaj ze wszystkimi składnikami.','Wlej do formy i piecz 25-30 minut.','Ostudź przed krojeniem.']
+  },
+
+  {
+    id:'builtin-19', emoji:'🍫', name:'Brownie z fasoli czarnej', cat:'Desery', photo:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
+    time:35, servings:8, carbs:22, protein:6, fat:8, kcal:185,
+    ingredients:[
+      {name:'Fasola czarna (puszka)',amount:'400g',carbs:48},
+      {name:'Kakao naturalne',amount:'3 łyżki',carbs:6},
+      {name:'Jajka kurze',amount:'3 szt.',carbs:0},
+      {name:'Miód',amount:'3 łyżki',carbs:45},
+      {name:'Masło orzechowe',amount:'3 łyżki',carbs:9},
+      {name:'Proszek do pieczenia',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Rozgrzej piekarnik do 180°C.','Zblenduj fasolę na gładką masę.','Wymieszaj ze wszystkimi składnikami.','Wlej do wyłożonej papierem formy 20×20cm.','Piecz 25–28 minut (patyczek powinien wychodzić suchy).','Ostudź przed krojeniem — brownie twardnieje po ostygnięciu.']
+  },
+  {
+    id:'builtin-20', emoji:'🧁', name:'Muffiny owsiane bananowe', cat:'Desery', photo:'https://images.unsplash.com/photo-1558303817-54ebae639b08?w=600&q=80',
+    time:30, servings:12, carbs:18, protein:4, fat:4, kcal:124,
+    ingredients:[
+      {name:'Banany (bardzo dojrzałe)',amount:'3 szt.',carbs:60},
+      {name:'Płatki owsiane',amount:'200g',carbs:120},
+      {name:'Jajka kurze',amount:'2 szt.',carbs:0},
+      {name:'Mleko 2%',amount:'100ml',carbs:5},
+      {name:'Cynamon',amount:'1 łyżeczka',carbs:0},
+      {name:'Rodzynki lub jagody',amount:'50g',carbs:38},
+    ],
+    steps:['Rozgrzej piekarnik do 175°C.','Banany rozgnieć widelcem na purée.','Wymieszaj wszystkie składniki w misce.','Rozłóż do 12 foremek muffinowych.','Piecz 18–22 minuty aż muffiny będą złote.','Studzić 10 minut przed wyjęciem z formy.']
+  },
+  {
+    id:'builtin-21', emoji:'🍮', name:'Panna cotta z mango', cat:'Desery', photo:'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80',
+    time:15, servings:4, carbs:20, protein:5, fat:8, kcal:172,
+    ingredients:[
+      {name:'Śmietanka 18%',amount:'400ml',carbs:12},
+      {name:'Żelatyna',amount:'2 łyżeczki',carbs:0},
+      {name:'Cukier',amount:'2 łyżki',carbs:24},
+      {name:'Ekstrakt waniliowy',amount:'1 łyżeczka',carbs:0},
+      {name:'Mango świeże',amount:'1 szt.',carbs:35},
+    ],
+    steps:['Żelatynę namocz w 3 łyżkach zimnej wody przez 5 minut.','Podgrzej śmietankę z cukrem i wanilią (nie gotuj!).','Dodaj żelatynę, mieszaj do rozpuszczenia.','Przelej do 4 pucharków, ostudź i wstaw do lodówki na min. 4h.','Mango zblenduj na mus, podaj jako sos na wierzchu.']
+  },
+  {
+    id:'builtin-22', emoji:'🍎', name:'Jabłka pieczone z cynamonem', cat:'Desery', photo:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&q=80',
+    time:25, servings:2, carbs:28, protein:1, fat:4, kcal:152,
+    ingredients:[
+      {name:'Jabłka',amount:'2 duże',carbs:48},
+      {name:'Cynamon',amount:'1 łyżeczka',carbs:0},
+      {name:'Orzechy włoskie',amount:'2 łyżki',carbs:2},
+      {name:'Masło',amount:'1 łyżka',carbs:0},
+      {name:'Miód',amount:'1 łyżka',carbs:15},
+    ],
+    steps:['Rozgrzej piekarnik do 180°C.','Jabłka wydrąż, nie obieraj.','Wypełnij wydrążone miejsca orzechami, cynamonem i miodem.','Na wierzch połóż kawałek masła.','Piecz 20–25 minut aż jabłka będą miękkie.','Podaj ciepłe, opcjonalnie z jogurtem greckim.']
+  },
+  {
+    id:'builtin-23', emoji:'🍓', name:'Tarta z owocami (bez pieczenia)', cat:'Desery', photo:'https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=600&q=80',
+    time:20, servings:6, carbs:32, protein:7, fat:12, kcal:268,
+    ingredients:[
+      {name:'Płatki owsiane',amount:'150g',carbs:90},
+      {name:'Daktyle',amount:'100g',carbs:67},
+      {name:'Twaróg sernikowy',amount:'300g',carbs:15},
+      {name:'Jogurt grecki',amount:'150g',carbs:6},
+      {name:'Truskawki',amount:'200g',carbs:14},
+      {name:'Borówki',amount:'100g',carbs:12},
+    ],
+    steps:['Daktyle i płatki zblenduj na lepką masę — to będzie spód.','Wyłóż masą formę (śr. 22cm), wyrównaj i wstaw do lodówki.','Wymieszaj twaróg z jogurtem greckim na krem.','Rozsmaruj krem na spodzie tarty.','Ułóż owoce artystycznie na wierzchu.','Schłodź min. 1h przed podaniem.']
   },
 ];
 
