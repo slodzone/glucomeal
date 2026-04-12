@@ -702,22 +702,37 @@
 
       <!-- ŁĄCZNIE -->
       <div class="calc-panel" id="calc-combined">
+        <div style="padding:10px 14px;background:var(--blue-lt);border:1px solid var(--blue);border-radius:10px;margin-bottom:14px;font-size:12.5px;color:var(--blue);line-height:1.5">
+          <strong>⚡ Kalkulator łączny</strong> — wpisz makroskładniki posiłku. Bolus natychmiastowy pokrywa węglowodany. Bolus przedłużony (FPU) pokrywa białko i tłuszcz.
+        </div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Posiłek</div>
         <div class="row" style="margin-bottom:10px">
           <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="x-carbs" placeholder="np. 60" min="0" oninput="calcCombined()"/></div>
+          <div class="inline-field"><label>Białko <span class="unit">(g)</span></label><input type="number" id="x-protein" placeholder="np. 25" min="0" oninput="calcCombined()"/></div>
+          <div class="inline-field"><label>Tłuszcz <span class="unit">(g)</span></label><input type="number" id="x-fat" placeholder="np. 15" min="0" oninput="calcCombined()"/></div>
+        </div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;margin-top:4px">Parametry</div>
+        <div class="row" style="margin-bottom:10px">
           <div class="inline-field"><label>ICR <span class="unit">(g/j)</span></label><input type="number" id="x-icr" placeholder="z profilu" min="1" oninput="calcCombined()"/></div>
+          <div class="inline-field"><label>Aktualny cukier <span class="unit">(mg/dL)</span></label><input type="number" id="x-current" placeholder="opcj." min="0" oninput="calcCombined()"/></div>
         </div>
         <div class="row" style="margin-bottom:10px">
-          <div class="inline-field"><label>Aktualny cukier <span class="unit">(mg/dL)</span></label><input type="number" id="x-current" placeholder="np. 180" min="0" oninput="calcCombined()"/></div>
-          <div class="inline-field"><label>Docelowy <span class="unit">(mg/dL)</span></label><input type="number" id="x-target" placeholder="z profilu" min="0" oninput="calcCombined()"/></div>
-        </div>
-        <div class="row" style="margin-bottom:10px">
-          <div class="inline-field"><label>ISF <span class="unit">(mg/dL na 1j)</span></label><input type="number" id="x-isf" placeholder="z profilu" min="1" oninput="calcCombined()"/></div>
+          <div class="inline-field"><label>Docelowy cukier <span class="unit">(mg/dL)</span></label><input type="number" id="x-target" placeholder="z profilu" min="0" oninput="calcCombined()"/></div>
+          <div class="inline-field"><label>ISF <span class="unit">(mg/dL/j)</span></label><input type="number" id="x-isf" placeholder="z profilu" min="1" oninput="calcCombined()"/></div>
         </div>
         <div class="combined-result" id="combined-result">
-          <div class="combined-title">⚡ Dawka łączna</div>
+          <div class="combined-title">⚡ Plan dawkowania insuliny</div>
           <div class="combined-breakdown">
-            <div class="combined-item"><div class="combined-item-label">🍽️ Bolus</div><div class="combined-item-val" id="x-bolus-val" style="color:var(--accent)">—</div></div>
-            <div class="combined-item"><div class="combined-item-label">📐 Korekta</div><div class="combined-item-val" id="x-corr-val" style="color:var(--blue)">—</div></div>
+            <div class="combined-item">
+              <div class="combined-item-label">🍽️ Bolus natychmiastowy</div>
+              <div class="combined-item-val" id="x-bolus-val" style="color:var(--accent)">—</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">węglowodany + korekta</div>
+            </div>
+            <div class="combined-item">
+              <div class="combined-item-label">⏳ Bolus przedłużony (FPU)</div>
+              <div class="combined-item-val" id="x-fpu-val" style="color:var(--orange)">—</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px" id="x-fpu-time">białko + tłuszcz</div>
+            </div>
           </div>
           <div class="combined-total">
             <div style="font-size:13px;color:var(--muted);margin-right:6px">Razem:</div>
@@ -1894,20 +1909,63 @@ function calcCorrection(){
 }
 
 function calcCombined(){
-  const carbs=getV('x-carbs'), icr=getVP('x-icr','icr');
-  const current=getV('x-current'), target=getVP('x-target','target_glucose'), isf=getVP('x-isf','isf');
-  const res=document.getElementById('combined-result');
-  const hasB=carbs&&carbs>0&&icr, hasC=current&&current>0&&target&&isf;
-  if(!hasB&&!hasC){res.classList.remove('visible');return;}
-  const bolusD=hasB?r1(carbs/icr):0;
-  const diff=hasC?current-target:0;
-  const corrD=hasC&&diff>0?r1(diff/isf):0;
-  const total=r1(bolusD+corrD);
+  const carbs   = getV('x-carbs')||0;
+  const protein = getV('x-protein')||0;
+  const fat     = getV('x-fat')||0;
+  const icr     = getVP('x-icr','icr');
+  const current = getV('x-current');
+  const target  = getVP('x-target','target_glucose');
+  const isf     = getVP('x-isf','isf');
+  const res = document.getElementById('combined-result');
+
+  const hasCarbs = carbs > 0 && icr;
+  const hasFP    = (protein > 0 || fat > 0) && icr;
+  const hasCorr  = current && current > 0 && target && isf;
+
+  if(!hasCarbs && !hasFP && !hasCorr){ res.classList.remove('visible'); return; }
+
+  // ── Bolus natychmiastowy = bolus węglowodanowy + korekta ──
+  const carbDose = hasCarbs ? r1(carbs / icr) : 0;
+  const diff     = hasCorr ? current - target : 0;
+  const corrDose = hasCorr && diff > 0 ? r1(diff / isf) : 0;
+  const immediate = r1(carbDose + corrDose);
+
+  // ── Bolus przedłużony FPU (Metoda Warszawska) ──
+  const kcalFP = (protein * 4) + (fat * 9);
+  const fpu    = kcalFP / 100;
+  const fpuDose = hasFP && fpu >= 1 ? r1((fpu * 10) / icr) : 0;
+  const fpuHours = hasFP && fpu >= 1 ? Math.min(5, Math.round(fpu)) : 0;
+
+  const total = r1(immediate + fpuDose);
+
   res.classList.add('visible');
-  document.getElementById('x-bolus-val').textContent=hasB?bolusD+'j':'—';
-  document.getElementById('x-corr-val').textContent=hasC?(corrD>0?corrD+'j':'0j'):'—';
-  document.getElementById('x-total-val').textContent=total;
-  document.getElementById('x-note').textContent=hasB&&hasC?`Bolus ${bolusD}j + korekta ${corrD}j = ${total}j łącznie`:'';
+  res.style.display = 'block';
+
+  // Natychmiastowy
+  let immLabel = '';
+  if(carbDose > 0 && corrDose > 0) immLabel = `${carbDose}j (węgl.) + ${corrDose}j (korekt.)`;
+  else if(carbDose > 0) immLabel = `${carbDose}j na ${carbs}g węgl.`;
+  else if(corrDose > 0) immLabel = `${corrDose}j korekcja`;
+  document.getElementById('x-bolus-val').textContent = immediate > 0 ? immediate+'j' : '0j';
+
+  // FPU
+  if(fpuDose > 0){
+    document.getElementById('x-fpu-val').textContent = fpuDose+'j';
+    document.getElementById('x-fpu-time').textContent =
+      `przez ${fpuHours}h — FPU: ${r1(fpu)}, ekw. ${r1(fpu*10)}g węgl.`;
+  } else if(hasFP && fpu < 1){
+    document.getElementById('x-fpu-val').textContent = '0j';
+    document.getElementById('x-fpu-time').textContent = `FPU = ${r1(fpu)} < 1 — bolus przedłużony zbędny`;
+  } else {
+    document.getElementById('x-fpu-val').textContent = '—';
+    document.getElementById('x-fpu-time').textContent = 'wpisz białko/tłuszcz';
+  }
+
+  document.getElementById('x-total-val').textContent = total;
+  const parts = [];
+  if(immediate > 0) parts.push(`${immediate}j natychmiast`);
+  if(fpuDose > 0)   parts.push(`${fpuDose}j przez ${fpuHours}h`);
+  document.getElementById('x-note').textContent = parts.join(' + ');
 }
 
 function quickCalc(){
@@ -1972,279 +2030,725 @@ function renderStats(){
 
 // Built-in sample recipes
 const BUILTIN_RECIPES = [
+  // ═══════════════ ŚNIADANIA ═══════════════
   {
-    id:'builtin-1', emoji:'🥣', name:'Owsianka bananowa', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&q=80',
-    time:10, servings:1, carbs:52, protein:9, fat:5, kcal:290,
+    id:'r-s1', emoji:'🥣', name:'Owsianka z jagodami i orzechami', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1571748982800-fa51082c2224?w=600&q=80',
+    time:10, servings:1, carbs:48, protein:12, fat:10, kcal:330, gi:'niski',
+    note:'Niski IG — powolny wzrost glikemii. Idealna na start dnia.',
+    ingredients:[
+      {name:'Płatki owsiane górskie',amount:'60g',carbs:36},
+      {name:'Mleko 2%',amount:'200ml',carbs:10},
+      {name:'Borówki',amount:'80g',carbs:10},
+      {name:'Orzechy włoskie',amount:'15g',carbs:1},
+      {name:'Cynamon',amount:'szczypta',carbs:0},
+    ],
+    steps:['Zagotuj mleko. Wsyp płatki i gotuj 5 minut mieszając.','Przełóż do miski. Dodaj borówki i orzechy.','Posyp cynamonem. Jedz od razu.']
+  },
+  {
+    id:'r-s2', emoji:'🍳', name:'Jajecznica z avocado i pomidorami', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80',
+    time:10, servings:1, carbs:6, protein:16, fat:22, kcal:290, gi:'niski',
+    note:'Posiłek bogaty w tłuszcz i białko — wymaga bolusу FPU.',
+    ingredients:[
+      {name:'Jajka kurze',amount:'3 szt.',carbs:1},
+      {name:'Avocado',amount:'1/2 szt.',carbs:2},
+      {name:'Pomidor',amount:'1 szt.',carbs:3},
+      {name:'Oliwa z oliwek',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Roztrzep jajka w misce.','Smaż na oliwie mieszając do ścięcia.','Podaj z pokrojonym avocado i pomidorem.','Dopraw solą, pieprzem i płatkami chilli.']
+  },
+  {
+    id:'r-s3', emoji:'🫙', name:'Overnight oats z malinami', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=80',
+    time:5, servings:1, carbs:44, protein:14, fat:7, kcal:295, gi:'niski',
+    note:'Przygotuj wieczorem. Niski IG dzięki fermentacji i błonnikowi.',
     ingredients:[
       {name:'Płatki owsiane',amount:'60g',carbs:36},
-      {name:'Mleko 2%',amount:'200ml',carbs:10},
-      {name:'Banan',amount:'1 szt. (100g)',carbs:20},
-      {name:'Miód',amount:'1 łyżeczka',carbs:6},
+      {name:'Jogurt skyr',amount:'150g',carbs:6},
+      {name:'Mleko migdałowe',amount:'100ml',carbs:1},
+      {name:'Maliny',amount:'80g',carbs:5},
+      {name:'Nasiona lnu',amount:'1 łyżka',carbs:0},
     ],
-    steps:['Zagotuj mleko w rondelku.','Wsyp płatki owsiane i gotuj na małym ogniu 5 minut, mieszając.','Pokrój banana w plasterki i dodaj na wierzch.','Skrop miodem przed podaniem.']
+    steps:['Wymieszaj płatki, skyr i mleko w słoiku.','Dodaj nasiona lnu.','Wstaw do lodówki na noc.','Rano udekoruj malinami.']
   },
   {
-    id:'builtin-2', emoji:'🍳', name:'Jajecznica z warzywami', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80',
-    time:10, servings:1, carbs:4, protein:18, fat:14, kcal:220,
+    id:'r-s4', emoji:'🥞', name:'Placki proteinowe z twarogu', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80',
+    time:20, servings:2, carbs:22, protein:28, fat:8, kcal:275, gi:'niski',
+    note:'Wysokie białko — uwzględnij FPU do obliczeń bolusu.',
     ingredients:[
-      {name:'Jajka kurze',amount:'3 szt.',carbs:0},
-      {name:'Papryka czerwona',amount:'50g',carbs:3},
-      {name:'Szpinak',amount:'30g',carbs:1},
-      {name:'Oliwa z oliwek',amount:'1 łyżka',carbs:0},
+      {name:'Twaróg chudy',amount:'250g',carbs:5},
+      {name:'Jajka kurze',amount:'2 szt.',carbs:1},
+      {name:'Mąka gryczana',amount:'3 łyżki',carbs:18},
+      {name:'Cynamon',amount:'1/2 łyżeczki',carbs:0},
     ],
-    steps:['Pokrój paprykę w drobną kostkę.','Rozgrzej oliwę na patelni, dodaj paprykę i smaż 2 minuty.','Dodaj szpinak, chwilę podduś.','Wbij jajka, mieszaj do ścięcia. Dopraw solą i pieprzem.']
+    steps:['Zmiksuj twaróg z jajkami i mąką na gładkie ciasto.','Smaż placuszki 3 minuty z każdej strony.','Podaj z jagodami lub jogurtem naturalnym.']
   },
   {
-    id:'builtin-3', emoji:'🍗', name:'Kurczak z ryżem i brokułami', cat:'Obiady', photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
-    time:30, servings:2, carbs:48, protein:38, fat:6, kcal:405,
+    id:'r-s5', emoji:'🥑', name:'Tost razowy z łososiem i avocado', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80',
+    time:10, servings:1, carbs:28, protein:22, fat:18, kcal:365, gi:'niski',
+    note:'Nienasycone kwasy tłuszczowe omega-3 — korzystne dla serca.',
     ingredients:[
-      {name:'Pierś kurczaka',amount:'200g',carbs:0},
-      {name:'Ryż biały',amount:'80g suchego',carbs:58},
-      {name:'Brokuły',amount:'200g',carbs:8},
-      {name:'Sos sojowy',amount:'2 łyżki',carbs:2},
+      {name:'Chleb razowy żytni',amount:'2 kromki',carbs:22},
+      {name:'Łosoś wędzony',amount:'80g',carbs:0},
+      {name:'Avocado',amount:'1/2 szt.',carbs:2},
+      {name:'Sok z cytryny',amount:'1 łyżeczka',carbs:1},
+      {name:'Koper',amount:'kilka gałązek',carbs:0},
     ],
-    steps:['Ugotuj ryż według instrukcji na opakowaniu.','Kurczaka pokrój w kostkę, zamarynuj w sosie sojowym 10 min.','Ugotuj brokuły na parze 8 minut.','Smaż kurczaka na patelni 8–10 minut do zarumienienia.','Podaj razem na talerzu.']
+    steps:['Podpiecz chleb w tosterze.','Avocado rozgnieć z sokiem z cytryny.','Posmaruj tost pastą avocado.','Ułóż łososia i udekoruj koprem.']
   },
   {
-    id:'builtin-4', emoji:'🥗', name:'Sałatka z tuńczykiem', cat:'Obiady', photo:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
-    time:10, servings:1, carbs:8, protein:28, fat:8, kcal:215,
+    id:'r-s6', emoji:'🍓', name:'Smoothie bowl z granolą', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=80',
+    time:10, servings:1, carbs:42, protein:10, fat:6, kcal:265, gi:'średni',
+    note:'Zamroź banana dzień wcześniej — bowl będzie gęsty jak lody.',
     ingredients:[
-      {name:'Tuńczyk w wodzie',amount:'1 puszka (150g)',carbs:0},
-      {name:'Sałata lodowa',amount:'100g',carbs:1},
-      {name:'Pomidor',amount:'1 szt.',carbs:3},
-      {name:'Ogórek',amount:'1/2 szt.',carbs:1},
-      {name:'Oliwa z oliwek',amount:'1 łyżka',carbs:0},
-      {name:'Ciecierzyca (z puszki)',amount:'50g',carbs:9},
-    ],
-    steps:['Osącz tuńczyka z zalewy.','Pokrój pomidora i ogórka.','Wymieszaj wszystkie składniki w misce.','Skrop oliwą, dopraw solą i pieprzem.']
-  },
-  {
-    id:'builtin-5', emoji:'🍲', name:'Zupa krem z brokułów', cat:'Zupy', photo:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80',
-    time:25, servings:3, carbs:14, protein:6, fat:4, kcal:115,
-    ingredients:[
-      {name:'Brokuły',amount:'500g',carbs:20},
-      {name:'Ziemniaki',amount:'200g',carbs:34},
-      {name:'Bulion warzywny',amount:'700ml',carbs:2},
-      {name:'Śmietana 12%',amount:'3 łyżki',carbs:2},
-    ],
-    steps:['Pokrój brokuły i ziemniaki.','Gotuj w bulionie 15 minut do miękkości.','Zblenduj na gładki krem.','Dodaj śmietanę, dopraw solą i gałką muszkatołową.']
-  },
-  {
-    id:'builtin-6', emoji:'🥞', name:'Naleśniki proteinowe', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80',
-    time:20, servings:2, carbs:30, protein:22, fat:8, kcal:280,
-    ingredients:[
-      {name:'Płatki owsiane (zmielone)',amount:'60g',carbs:36},
-      {name:'Jajka kurze',amount:'2 szt.',carbs:0},
-      {name:'Twaróg chudy',amount:'150g',carbs:5},
-      {name:'Mleko 2%',amount:'100ml',carbs:5},
-    ],
-    steps:['Zmiksuj wszystkie składniki blenderem na gładkie ciasto.','Rozgrzej patelnię, smaż naleśniki po 2 minuty z każdej strony.','Podaj z owocami lub jogurtem naturalnym.']
-  },
-  {
-    id:'builtin-7', emoji:'🍝', name:'Makaron z łososiem', cat:'Obiady', photo:'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80',
-    time:20, servings:2, carbs:50, protein:28, fat:14, kcal:440,
-    ingredients:[
-      {name:'Makaron pszenny',amount:'150g suchego',carbs:75},
-      {name:'Łosoś (świeży)',amount:'200g',carbs:0},
-      {name:'Śmietana 12%',amount:'4 łyżki',carbs:4},
-      {name:'Szpinak',amount:'80g',carbs:2},
-      {name:'Czosnek',amount:'2 ząbki',carbs:2},
-    ],
-    steps:['Ugotuj makaron al dente.','Łososia pokrój w kawałki, smaż na patelni 5 minut.','Dodaj czosnek, szpinak, śmietanę. Duś 3 minuty.','Wymieszaj z makaronem, dopraw solą i pieprzem.']
-  },
-  {
-    id:'builtin-8', emoji:'🍮', name:'Pudding chia z owocami', cat:'Desery', photo:'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=600&q=80',
-    time:5, servings:1, carbs:28, protein:8, fat:9, kcal:230,
-    ingredients:[
-      {name:'Nasiona chia',amount:'30g',carbs:4},
-      {name:'Mleko migdałowe',amount:'200ml',carbs:2},
-      {name:'Jogurt grecki 0%',amount:'100g',carbs:4},
-      {name:'Jagody',amount:'80g',carbs:10},
-      {name:'Miód',amount:'1 łyżeczka',carbs:6},
-    ],
-    steps:['Wymieszaj chia z mlekiem migdałowym, odstaw na min. 4 godziny (lub przez noc).','Dodaj jogurt grecki i wymieszaj.','Podaj z jagodami i miodem na wierzchu.']
-  },
-  {
-    id:'builtin-9', emoji:'🥙', name:'Wrap z kurczakiem', cat:'Obiady', photo:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&q=80',
-    time:15, servings:1, carbs:38, protein:32, fat:10, kcal:370,
-    ingredients:[
-      {name:'Tortilla pszenna',amount:'1 szt.',carbs:30},
-      {name:'Pierś kurczaka gotowana',amount:'120g',carbs:0},
-      {name:'Sałata lodowa',amount:'40g',carbs:1},
-      {name:'Pomidor',amount:'1 szt.',carbs:3},
-      {name:'Hummus',amount:'2 łyżki',carbs:5},
-    ],
-    steps:['Pokrój kurczaka w paski.','Posmaruj tortillę hummusem.','Ułóż sałatę, pomidora i kurczaka.','Zwiń ciasno i przekrój na pół.']
-  },
-  {
-    id:'builtin-10', emoji:'🥣', name:'Smoothie bowl z granolą', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600&q=80',
-    time:10, servings:1, carbs:45, protein:10, fat:6, kcal:270,
-    ingredients:[
-      {name:'Mrożone borówki',amount:'100g',carbs:12},
       {name:'Banan mrożony',amount:'1 szt.',carbs:20},
+      {name:'Truskawki mrożone',amount:'100g',carbs:7},
       {name:'Jogurt grecki 0%',amount:'100g',carbs:4},
       {name:'Granola bez cukru',amount:'30g',carbs:18},
+      {name:'Kiwi',amount:'1 szt.',carbs:8},
     ],
-    steps:['Zblenduj borówki, banana i jogurt.','Przelej do miski.','Posyp granolą i owocami.']
+    steps:['Zblenduj banana, truskawki i jogurt.','Przelej do miski — masa powinna być gęsta.','Posyp granolą i pokrojonym kiwi.']
   },
   {
-    id:'builtin-11', emoji:'🍜', name:'Zupa miso z tofu', cat:'Zupy', photo:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
-    time:15, servings:2, carbs:12, protein:14, fat:5, kcal:145,
+    id:'r-s7', emoji:'🍵', name:'Kasza jaglana z jabłkiem i cynamonem', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&q=80',
+    time:20, servings:2, carbs:46, protein:6, fat:4, kcal:245, gi:'niski',
+    note:'Kasza jaglana ma niższy IG niż ryż biały. Bogata w magnez.',
     ingredients:[
-      {name:'Pasta miso',amount:'2 łyżki',carbs:6},
-      {name:'Tofu twarde',amount:'150g',carbs:2},
-      {name:'Woda',amount:'600ml',carbs:0},
-      {name:'Wodorosty wakame',amount:'2g',carbs:1},
+      {name:'Kasza jaglana',amount:'80g suchej',carbs:56},
+      {name:'Mleko 2%',amount:'300ml',carbs:15},
+      {name:'Jabłko',amount:'1 szt.',carbs:12},
+      {name:'Cynamon',amount:'1 łyżeczka',carbs:0},
+      {name:'Orzechy laskowe',amount:'15g',carbs:2},
     ],
-    steps:['Zagotuj wodę, rozpuść pastę miso.','Dodaj pokrojone tofu.','Dodaj namoczone wodorosty.','Podaj z szczypiorkiem.']
+    steps:['Ugotuj kaszę w mleku ok. 15 minut mieszając.','Zetrzyj jabłko na tarce i wymieszaj.','Podaj z orzechami i cynamonem.']
   },
   {
-    id:'builtin-12', emoji:'🥗', name:'Sałatka grecka z ciecierzycą', cat:'Obiady', photo:'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80',
-    time:10, servings:2, carbs:22, protein:12, fat:14, kcal:265,
+    id:'r-s8', emoji:'🫔', name:'Shakshuka z fetą', cat:'Śniadania',
+    photo:'https://images.unsplash.com/photo-1590412200988-a436970781fa?w=600&q=80',
+    time:25, servings:2, carbs:18, protein:18, fat:14, kcal:270, gi:'niski',
+    note:'Bogata w białko i warzywa. Niski IG — stabilna glikemia.',
     ingredients:[
-      {name:'Ciecierzyca z puszki',amount:'200g',carbs:28},
-      {name:'Pomidory koktajlowe',amount:'150g',carbs:5},
-      {name:'Ogórek',amount:'1 szt.',carbs:3},
-      {name:'Ser feta',amount:'80g',carbs:0},
-      {name:'Oliwki czarne',amount:'40g',carbs:1},
-    ],
-    steps:['Osącz ciecierzycę.','Pokrój pomidory i ogórka.','Wymieszaj wszystko z oliwą.','Posyp oregano i podaj.']
-  },
-  {
-    id:'builtin-13', emoji:'🍳', name:'Shakshuka z fetą', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1590412200988-a436970781fa?w=600&q=80',
-    time:25, servings:2, carbs:18, protein:16, fat:12, kcal:250,
-    ingredients:[
-      {name:'Jajka kurze',amount:'4 szt.',carbs:0},
+      {name:'Jajka kurze',amount:'4 szt.',carbs:1},
       {name:'Pomidory krojone puszka',amount:'400g',carbs:12},
       {name:'Papryka czerwona',amount:'1 szt.',carbs:6},
       {name:'Cebula',amount:'1 szt.',carbs:7},
       {name:'Ser feta',amount:'60g',carbs:0},
+      {name:'Czosnek',amount:'2 ząbki',carbs:2},
     ],
-    steps:['Podsmaż cebulę i paprykę 5 minut.','Wlej pomidory, duś 10 minut.','Wbij jajka w zagłębienia, przykryj.','Gotuj 5-7 minut. Posyp fetą.']
+    steps:['Podsmaż cebulę i paprykę z czosnkiem 5 minut.','Wlej pomidory, duś 10 minut, dopraw.','Zrób 4 dołki, wbij jajka. Przykryj, gotuj 5-7 min.','Posyp pokruszoną fetą i podaj.']
+  },
+
+  // ═══════════════ OBIADY ═══════════════
+  {
+    id:'r-o1', emoji:'🍗', name:'Kurczak pieczony z warzywami', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80',
+    time:45, servings:2, carbs:22, protein:42, fat:8, kcal:330, gi:'niski',
+    note:'Wysoka zawartość białka — zastosuj bolus FPU. Idealny po treningu.',
+    ingredients:[
+      {name:'Pierś kurczaka',amount:'300g',carbs:0},
+      {name:'Bataty',amount:'200g',carbs:40},
+      {name:'Brokuły',amount:'200g',carbs:8},
+      {name:'Papryka czerwona',amount:'1 szt.',carbs:6},
+      {name:'Oliwa z oliwek',amount:'1 łyżka',carbs:0},
+      {name:'Zioła prowansalskie',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Rozgrzej piekarnik do 200°C.','Kurczaka podziel na kawałki, natrzyj ziołami i oliwą.','Bataty i warzywa pokrój, ułóż razem na blaszce.','Piecz 35-40 minut aż kurczak będzie złoty.']
   },
   {
-    id:'builtin-14', emoji:'🍗', name:'Pieczone udka z batatami', cat:'Obiady', photo:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80',
-    time:50, servings:2, carbs:42, protein:34, fat:12, kcal:420,
+    id:'r-o2', emoji:'🐟', name:'Łosoś z quinoa i szpinakiem', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80',
+    time:25, servings:2, carbs:34, protein:38, fat:16, kcal:435, gi:'niski',
+    note:'Omega-3 z łososia chroni układ sercowo-naczyniowy. Ważny składnik diety T1.',
     ingredients:[
-      {name:'Udka kurczaka bez skóry',amount:'4 szt.',carbs:0},
-      {name:'Bataty',amount:'300g',carbs:60},
-      {name:'Oliwa z oliwek',amount:'2 łyżki',carbs:0},
-      {name:'Przyprawy: czosnek, papryka',amount:'po 1 łyżeczce',carbs:2},
-    ],
-    steps:['Rozgrzej piekarnik do 200C.','Bataty pokrój w kostkę i przypraw.','Udka natrzyj przyprawami.','Piecz wszystko razem 40-45 minut.']
-  },
-  {
-    id:'builtin-15', emoji:'🫙', name:'Overnight oats z jabłkiem', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=80',
-    time:5, servings:1, carbs:48, protein:12, fat:8, kcal:315,
-    ingredients:[
-      {name:'Płatki owsiane',amount:'60g',carbs:36},
-      {name:'Mleko 2%',amount:'150ml',carbs:8},
-      {name:'Jogurt naturalny',amount:'80g',carbs:3},
-      {name:'Jabłko',amount:'1/2 szt.',carbs:6},
-      {name:'Cynamon',amount:'1/2 łyżeczki',carbs:0},
-      {name:'Orzechy włoskie',amount:'15g',carbs:1},
-    ],
-    steps:['Wymieszaj płatki z mlekiem i jogurtem w słoiku.','Posyp cynamonem.','Wstaw do lodówki na noc.','Rano dodaj starte jabłko i orzechy.']
-  },
-  {
-    id:'builtin-16', emoji:'🐟', name:'Łosoś z quinoa i szpinakiem', cat:'Obiady', photo:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80',
-    time:25, servings:2, carbs:32, protein:36, fat:16, kcal:420,
-    ingredients:[
-      {name:'Filet z łososia',amount:'2 szt. 150g',carbs:0},
-      {name:'Quinoa',amount:'100g sucha',carbs:60},
+      {name:'Filet z łososia',amount:'2×150g',carbs:0},
+      {name:'Quinoa',amount:'100g suchej',carbs:62},
       {name:'Szpinak baby',amount:'100g',carbs:2},
       {name:'Cytryna',amount:'1 szt.',carbs:4},
       {name:'Oliwa z oliwek',amount:'1 łyżka',carbs:0},
     ],
-    steps:['Ugotuj quinoa według instrukcji.','Łososia skrop sokiem z cytryny, smaż 4 minuty z każdej strony.','Na tej samej patelni podsmaż szpinak 2 minuty.','Podaj łososia na quinoa ze szpinakiem.']
+    steps:['Ugotuj quinoa (ok. 15 min).','Łososia skrop sokiem z cytryny i smaż 4 min z każdej strony.','Podsmaż szpinak 2 minuty.','Podaj łososia na quinoa ze szpinakiem.']
   },
   {
-    id:'builtin-17', emoji:'🍵', name:'Zupa krem z dyni', cat:'Zupy', photo:'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600&q=80',
-    time:35, servings:4, carbs:18, protein:3, fat:4, kcal:120,
+    id:'r-o3', emoji:'🍝', name:'Makaron razowy z sosem bolońskim', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=600&q=80',
+    time:35, servings:2, carbs:52, protein:28, fat:12, kcal:430, gi:'niski',
+    note:'Makaron razowy ma niższy IG. Gotuj al dente — IG jeszcze niższy.',
     ingredients:[
-      {name:'Dynia Hokkaido',amount:'800g',carbs:64},
+      {name:'Makaron razowy pszenny',amount:'150g suchego',carbs:63},
+      {name:'Mielona wołowina chuda',amount:'200g',carbs:0},
+      {name:'Pomidory krojone puszka',amount:'400g',carbs:14},
       {name:'Cebula',amount:'1 szt.',carbs:7},
-      {name:'Bulion warzywny',amount:'700ml',carbs:2},
-      {name:'Imbir świeży',amount:'2cm kawałek',carbs:2},
-      {name:'Mleko kokosowe',amount:'100ml',carbs:3},
+      {name:'Czosnek',amount:'2 ząbki',carbs:2},
     ],
-    steps:['Pokrój dynię i cebulę.','Duś cebulę, dodaj dynię i imbir.','Zalej bulionem, gotuj 20 minut.','Zblenduj, dodaj mleko kokosowe i dopraw.']
+    steps:['Podsmaż cebulę z czosnkiem.','Dodaj mięso, smaż rozdrabniając.','Wlej pomidory, duś 15 minut.','Ugotuj makaron al dente. Wymieszaj z sosem.']
   },
   {
-    id:'builtin-18', emoji:'🍫', name:'Brownie z fasoli czarnej', cat:'Desery', photo:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
-    time:40, servings:8, carbs:22, protein:6, fat:8, kcal:185,
+    id:'r-o4', emoji:'🫕', name:'Quinoa bowl z ciecierzycą', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
+    time:20, servings:2, carbs:48, protein:18, fat:10, kcal:360, gi:'niski',
+    note:'Roślinne białko i błonnik — doskonała kombinacja dla T1.',
     ingredients:[
-      {name:'Fasola czarna (puszka)',amount:'400g',carbs:48},
+      {name:'Quinoa',amount:'100g suchej',carbs:60},
+      {name:'Ciecierzyca z puszki',amount:'200g',carbs:28},
+      {name:'Ogórek',amount:'1 szt.',carbs:3},
+      {name:'Pomidory koktajlowe',amount:'100g',carbs:4},
+      {name:'Tahini',amount:'2 łyżki',carbs:4},
+      {name:'Sok z cytryny',amount:'1 łyżka',carbs:1},
+    ],
+    steps:['Ugotuj quinoa.','Tahini wymieszaj z cytrynową i łyżką wody.','Złóż bowl: quinoa, ciecierzyca, warzywa.','Polej sosem tahini.']
+  },
+  {
+    id:'r-o5', emoji:'🥘', name:'Leczo warzywne z jajkiem', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=600&q=80',
+    time:30, servings:2, carbs:20, protein:14, fat:8, kcal:210, gi:'niski',
+    note:'Dieta śródziemnomorska — zalecana przez PTD i ADA.',
+    ingredients:[
+      {name:'Papryka mix kolorów',amount:'3 szt.',carbs:18},
+      {name:'Cukinia',amount:'1 szt.',carbs:4},
+      {name:'Pomidory z puszki',amount:'400g',carbs:14},
+      {name:'Jajka kurze',amount:'4 szt.',carbs:1},
+      {name:'Cebula',amount:'1 szt.',carbs:7},
+    ],
+    steps:['Podsmaż cebulę, dodaj paprykę i cukinię.','Wlej pomidory, duś 10 minut.','Wbij jajka, przykryj i gotuj 5-7 minut.','Podaj z razowym pieczywem.']
+  },
+  {
+    id:'r-o6', emoji:'🍜', name:'Zupa soczewicowa z kurkumą', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=600&q=80',
+    time:30, servings:4, carbs:28, protein:12, fat:4, kcal:200, gi:'niski',
+    note:'Soczewica — wyjątkowo niski IG (~30). Bogata w białko roślinne.',
+    ingredients:[
+      {name:'Soczewica czerwona',amount:'200g',carbs:104},
+      {name:'Marchew',amount:'2 szt.',carbs:10},
+      {name:'Cebula',amount:'1 szt.',carbs:7},
+      {name:'Kurkuma',amount:'1 łyżeczka',carbs:0},
+      {name:'Bulion warzywny',amount:'1l',carbs:2},
+      {name:'Czosnek',amount:'2 ząbki',carbs:2},
+    ],
+    steps:['Podsmaż cebulę z czosnkiem i kurkumą.','Dodaj marchew i soczewicę.','Zalej bulionem, gotuj 20 minut.','Zblenduj połowę zupy dla kremowej konsystencji.']
+  },
+  {
+    id:'r-o7', emoji:'🫙', name:'Wrap z indykiem i warzywami', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&q=80',
+    time:15, servings:1, carbs:38, protein:32, fat:8, kcal:360, gi:'średni',
+    note:'Szybki posiłek po treningu. Indyk — chude białko.',
+    ingredients:[
+      {name:'Tortilla pszenna razowa',amount:'1 szt.',carbs:28},
+      {name:'Pierś indyka gotowana',amount:'120g',carbs:0},
+      {name:'Hummus',amount:'2 łyżki',carbs:5},
+      {name:'Sałata rukola',amount:'40g',carbs:1},
+      {name:'Pomidor',amount:'1 szt.',carbs:3},
+      {name:'Ogórek',amount:'1/2 szt.',carbs:1},
+    ],
+    steps:['Posmaruj tortillę hummusem.','Ułóż rukolę, pomidora, ogórka.','Dodaj pokrojony indyk.','Zwiń ciasno, przekrój ukośnie.']
+  },
+  {
+    id:'r-o8', emoji:'🐟', name:'Tuńczyk z ryżem brązowym i brokułami', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
+    time:25, servings:2, carbs:46, protein:30, fat:6, kcal:360, gi:'niski',
+    note:'Klasyczny posiłek sportowca. Ryż brązowy — niższy IG niż biały.',
+    ingredients:[
+      {name:'Ryż brązowy',amount:'80g suchego',carbs:62},
+      {name:'Tuńczyk w wodzie',amount:'2 puszki (300g)',carbs:0},
+      {name:'Brokuły',amount:'200g',carbs:8},
+      {name:'Sos sojowy',amount:'1 łyżka',carbs:1},
+      {name:'Sezam',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Ugotuj ryż brązowy (ok. 25 min).','Brokuły ugotuj na parze 8 minut.','Osącz tuńczyka, wymieszaj z sosem sojowym.','Podaj wszystko razem, posyp sezamem.']
+  },
+  {
+    id:'r-o9', emoji:'🥗', name:'Sałatka nicejska z jajkiem', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80',
+    time:15, servings:2, carbs:14, protein:24, fat:16, kcal:300, gi:'niski',
+    note:'Klasyczna sałatka śródziemnomorska. Niska zawartość węglowodanów.',
+    ingredients:[
+      {name:'Tuńczyk w oliwie',amount:'1 puszka (160g)',carbs:0},
+      {name:'Jajka na twardo',amount:'2 szt.',carbs:1},
+      {name:'Fasolka szparagowa',amount:'150g',carbs:5},
+      {name:'Oliwki',amount:'40g',carbs:1},
+      {name:'Sałata',amount:'100g',carbs:2},
+      {name:'Pomidory koktajlowe',amount:'100g',carbs:4},
+    ],
+    steps:['Ugotuj fasolkę 5 minut, ostudź.','Pokrój jajka na pół.','Ułóż sałatę, fasolkę, tuńczyka, jajka.','Dodaj oliwki, skrop oliwą i octem balsamicznym.']
+  },
+  {
+    id:'r-o10', emoji:'🍲', name:'Zupa krem z brokułów', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80',
+    time:25, servings:3, carbs:14, protein:6, fat:4, kcal:115, gi:'niski',
+    note:'Brokuły zawierają chromium — pomaga w regulacji glikemii.',
+    ingredients:[
+      {name:'Brokuły',amount:'500g',carbs:20},
+      {name:'Ziemniaki',amount:'150g',carbs:26},
+      {name:'Bulion warzywny',amount:'700ml',carbs:2},
+      {name:'Śmietanka 12%',amount:'3 łyżki',carbs:2},
+    ],
+    steps:['Ugotuj brokuły i ziemniaki w bulionie 15 min.','Zblenduj na krem.','Dodaj śmietankę, dopraw gałką muszkatołową.','Podaj z pestkami dyni.']
+  },
+  {
+    id:'r-o11', emoji:'🫕', name:'Poke bowl z łososiem', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80',
+    time:20, servings:1, carbs:48, protein:32, fat:16, kcal:470, gi:'średni',
+    note:'Wysoka zawartość omega-3. Pamiętaj o FPU od łososia i avocado.',
+    ingredients:[
+      {name:'Ryż do sushi (ugotowany)',amount:'150g',carbs:38},
+      {name:'Łosoś świeży',amount:'150g',carbs:0},
+      {name:'Avocado',amount:'1/2 szt.',carbs:2},
+      {name:'Edamame',amount:'50g',carbs:4},
+      {name:'Sos sojowy',amount:'2 łyżki',carbs:2},
+      {name:'Sezam',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Łososia zamarynuj w sosie sojowym 10 min.','Ugotowany ryż ułóż w misce.','Dodaj łososia, avocado, edamame.','Posyp sezamem.']
+  },
+  {
+    id:'r-o12', emoji:'🍗', name:'Curry z kurczaka z ryżem basmati', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80',
+    time:35, servings:3, carbs:42, protein:32, fat:10, kcal:390, gi:'niski',
+    note:'Kurkuma i imbir mają właściwości przeciwzapalne.',
+    ingredients:[
+      {name:'Pierś kurczaka',amount:'300g',carbs:0},
+      {name:'Ryż basmati',amount:'120g suchego',carbs:90},
+      {name:'Mleko kokosowe light',amount:'200ml',carbs:6},
+      {name:'Pomidory krojone puszka',amount:'200g',carbs:7},
+      {name:'Curry w proszku',amount:'2 łyżeczki',carbs:0},
+      {name:'Cebula',amount:'1 szt.',carbs:7},
+    ],
+    steps:['Ugotuj ryż basmati.','Podsmaż cebulę, dodaj curry.','Dodaj kurczaka w kostkach, smaż 5 min.','Wlej pomidory i mleko kokosowe. Duś 15 min.']
+  },
+  {
+    id:'r-o13', emoji:'🍜', name:'Zupa miso z tofu', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
+    time:15, servings:2, carbs:8, protein:14, fat:5, kcal:135, gi:'niski',
+    note:'Lekka, rozgrzewająca. Tofu — roślinne białko o niskim IG.',
+    ingredients:[
+      {name:'Pasta miso',amount:'2 łyżki',carbs:6},
+      {name:'Tofu twarde',amount:'150g',carbs:2},
+      {name:'Wodorosty wakame',amount:'2g suszone',carbs:1},
+      {name:'Szczypiorek',amount:'3 łodygi',carbs:0},
+      {name:'Woda',amount:'600ml',carbs:0},
+    ],
+    steps:['Zagotuj wodę. Nie gotuj miso — obniża to wartości odżywcze!','Rozpuść pastę miso w małej ilości wody, dodaj do garnka.','Dodaj pokrojone tofu i namoczone wodorosty.','Posyp szczypiorkiem.']
+  },
+  {
+    id:'r-o14', emoji:'🥙', name:'Gyros z kurczaka z tzatziki', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1554931670-4ebfabf6e7a9?w=600&q=80',
+    time:25, servings:2, carbs:44, protein:34, fat:10, kcal:410, gi:'średni',
+    note:'Domowe tzatziki zamiast sosu majonezowego — zdrowsza alternatywa.',
+    ingredients:[
+      {name:'Pierś kurczaka',amount:'250g',carbs:0},
+      {name:'Pita pszenna razowa',amount:'2 szt.',carbs:56},
+      {name:'Jogurt grecki 0%',amount:'150g',carbs:6},
+      {name:'Ogórek',amount:'1/2 szt.',carbs:2},
+      {name:'Czosnek',amount:'1 ząbek',carbs:1},
+      {name:'Sałata i pomidor',amount:'do smaku',carbs:4},
+    ],
+    steps:['Kurczaka pokrój w paski, dopraw papryką i czosnkiem.','Smaż 8-10 minut.','Zetrzyj ogórka, wyciśnij wodę, wymieszaj z jogurtem i czosnkiem.','Napełnij pitę kurczakiem, warzywami i tzatziki.']
+  },
+  {
+    id:'r-o15', emoji:'🍕', name:'Pizza na spodzie kalafiorowym', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&q=80',
+    time:40, servings:2, carbs:20, protein:22, fat:14, kcal:295, gi:'niski',
+    note:'Kalafior zamiast mąki — dramatycznie niższy IG. Sprytna alternatywa!',
+    ingredients:[
+      {name:'Kalafior',amount:'1 główka (600g)',carbs:18},
+      {name:'Jajka kurze',amount:'2 szt.',carbs:1},
+      {name:'Ser mozzarella',amount:'100g',carbs:1},
+      {name:'Sos pomidorowy',amount:'4 łyżki',carbs:6},
+      {name:'Ulubione dodatki',amount:'do smaku',carbs:4},
+    ],
+    steps:['Blenduj kalafior na drobne kawałki, wyciskaj wodę.','Wymieszaj z jajkami i połową mozzarelli.','Formuj "spód", piecz 20 min w 200°C.','Dodaj sos i pozostałą mozzarellę, piecz jeszcze 10 min.']
+  },
+
+  // ═══════════════ KOLACJE ═══════════════
+  {
+    id:'r-k1', emoji:'🥗', name:'Sałatka z pieczonym łososiem i rukolą', cat:'Kolacje',
+    photo:'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=600&q=80',
+    time:20, servings:2, carbs:8, protein:28, fat:18, kcal:310, gi:'niski',
+    note:'Lekka kolacja — niskie węglowodany, wysokie białko i zdrowe tłuszcze.',
+    ingredients:[
+      {name:'Łosoś pieczony',amount:'200g',carbs:0},
+      {name:'Rukola',amount:'80g',carbs:1},
+      {name:'Pomidory koktajlowe',amount:'100g',carbs:4},
+      {name:'Parmezan',amount:'20g',carbs:0},
+      {name:'Oliwa z oliwek',amount:'1 łyżka',carbs:0},
+      {name:'Ocet balsamiczny',amount:'1 łyżka',carbs:3},
+    ],
+    steps:['Piecz łososia 15 min w 180°C.','Ułóż rukolę z pomidorami.','Ułóż łososia na sałacie.','Skrop oliwą i octem, posyp parmezanem.']
+  },
+  {
+    id:'r-k2', emoji:'🥚', name:'Omlet z warzywami i fetą', cat:'Kolacje',
+    photo:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80',
+    time:15, servings:1, carbs:8, protein:22, fat:16, kcal:265, gi:'niski',
+    note:'Lekka kolacja. Białko i tłuszcz nasycają długo.',
+    ingredients:[
+      {name:'Jajka kurze',amount:'3 szt.',carbs:1},
+      {name:'Ser feta',amount:'50g',carbs:0},
+      {name:'Szpinak',amount:'50g',carbs:1},
+      {name:'Papryka',amount:'1/2 szt.',carbs:3},
+      {name:'Oliwa z oliwek',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Ubij jajka widelcem. Dodaj szpinak i paprykę.','Smaż na oliwie nie mieszając.','Gdy spód się zetnie, złóż omlet.','Posyp pokruszoną fetą.']
+  },
+  {
+    id:'r-k3', emoji:'🍲', name:'Krem z dyni z pestkami', cat:'Kolacje',
+    photo:'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=600&q=80',
+    time:30, servings:3, carbs:20, protein:4, fat:5, kcal:140, gi:'niski',
+    note:'Dynia bogata w beta-karoten i błonnik. Sycąca zupa na kolację.',
+    ingredients:[
+      {name:'Dynia Hokkaido',amount:'600g',carbs:48},
+      {name:'Cebula',amount:'1 szt.',carbs:7},
+      {name:'Bulion warzywny',amount:'600ml',carbs:2},
+      {name:'Imbir świeży',amount:'2cm',carbs:1},
+      {name:'Pestki dyni',amount:'2 łyżki',carbs:1},
+    ],
+    steps:['Podsmaż cebulę z imbirem.','Dodaj dynię i bulion, gotuj 20 minut.','Zblenduj na krem.','Podaj z pestkami dyni i odrobiną oliwy.']
+  },
+  {
+    id:'r-k4', emoji:'🐟', name:'Makrela z sałatką z ogórka', cat:'Kolacje',
+    photo:'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
+    time:10, servings:1, carbs:6, protein:20, fat:18, kcal:265, gi:'niski',
+    note:'Makrela — znakomite źródło omega-3. Szybka, zdrowa kolacja.',
+    ingredients:[
+      {name:'Makrela wędzona',amount:'120g',carbs:0},
+      {name:'Ogórek',amount:'1 szt.',carbs:3},
+      {name:'Cebula czerwona',amount:'1/4 szt.',carbs:2},
+      {name:'Koper',amount:'kilka gałązek',carbs:0},
+      {name:'Sok z cytryny',amount:'1 łyżka',carbs:1},
+    ],
+    steps:['Ogórka pokrój w cienkie plasterki.','Wymieszaj z cebulą, koprem i sokiem z cytryny.','Ułóż na talerzu z makreli.']
+  },
+
+  // ═══════════════ PRZEKĄSKI ═══════════════
+  {
+    id:'r-p1', emoji:'🥜', name:'Hummus z warzywami', cat:'Przekąski',
+    photo:'https://images.unsplash.com/photo-1544510806-801cd4b4b7d0?w=600&q=80',
+    time:10, servings:4, carbs:18, protein:8, fat:8, kcal:178, gi:'niski',
+    note:'Ciecierzyca — świetne źródło białka roślinnego. IG ~30.',
+    ingredients:[
+      {name:'Ciecierzyca z puszki',amount:'400g',carbs:60},
+      {name:'Tahini',amount:'2 łyżki',carbs:4},
+      {name:'Czosnek',amount:'1 ząbek',carbs:1},
+      {name:'Sok z cytryny',amount:'2 łyżki',carbs:2},
+      {name:'Oliwa z oliwek',amount:'2 łyżki',carbs:0},
+      {name:'Warzywa do maczania',amount:'do smaku',carbs:5},
+    ],
+    steps:['Zblenduj ciecierzycę, tahini, czosnek i sok z cytryny.','Dodaj oliwę, blenduj do kremowej konsystencji.','Podaj z marchewką, selerem i papryką.']
+  },
+  {
+    id:'r-p2', emoji:'🧀', name:'Twarożek z rzodkiewką i szczypiorkiem', cat:'Przekąski',
+    photo:'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=600&q=80',
+    time:5, servings:2, carbs:4, protein:14, fat:2, kcal:90, gi:'niski',
+    note:'Lekka przekąska bogata w białko. Idealna gdy cukier jest w normie.',
+    ingredients:[
+      {name:'Twaróg chudy',amount:'200g',carbs:4},
+      {name:'Rzodkiewka',amount:'5 szt.',carbs:2},
+      {name:'Szczypiorek',amount:'1 pęczek',carbs:1},
+      {name:'Sól i pieprz',amount:'do smaku',carbs:0},
+    ],
+    steps:['Wymieszaj twaróg ze szczypiorkiem.','Dodaj pokrojone rzodkiewki.','Dopraw i podaj z razowym pieczywem lub warzywami.']
+  },
+  {
+    id:'r-p3', emoji:'🫐', name:'Jogurt grecki z orzechami', cat:'Przekąski',
+    photo:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80',
+    time:3, servings:1, carbs:12, protein:14, fat:12, kcal:210, gi:'niski',
+    note:'Białko + tłuszcze spowalniają wchłanianie węglowodanów.',
+    ingredients:[
+      {name:'Jogurt grecki 0%',amount:'200g',carbs:8},
+      {name:'Orzechy włoskie',amount:'20g',carbs:1},
+      {name:'Borówki',amount:'50g',carbs:6},
+      {name:'Miód',amount:'1 łyżeczka',carbs:5},
+    ],
+    steps:['Nałóż jogurt do miseczki.','Dodaj orzechy i borówki.','Skrop miodem.']
+  },
+
+  // ═══════════════ PO TRENINGU ═══════════════
+  {
+    id:'r-t1', emoji:'💪', name:'Koktajl proteinowy po treningu', cat:'Po treningu',
+    photo:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&q=80',
+    time:5, servings:1, carbs:38, protein:30, fat:4, kcal:305, gi:'wysoki',
+    note:'Po treningu IG może być wyższy — mięśnie chłoną glukozę. Uzgodnij dawkę z lekarzem.',
+    ingredients:[
+      {name:'Banan',amount:'1 szt.',carbs:20},
+      {name:'Białko serwatkowe',amount:'1 miarka (30g)',carbs:3},
+      {name:'Mleko 2%',amount:'250ml',carbs:12},
+      {name:'Kakao naturalne',amount:'1 łyżka',carbs:3},
+    ],
+    steps:['Wrzuć wszystko do blendera.','Blenduj 30 sekund.','Pij natychmiast po treningu.']
+  },
+  {
+    id:'r-t2', emoji:'🍌', name:'Ryż z kurczakiem i bananem (pre-trening)', cat:'Po treningu',
+    photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
+    time:20, servings:1, carbs:68, protein:34, fat:4, kcal:450, gi:'wysoki',
+    note:'Przed intensywnym wysiłkiem — wyższy IG jest tu wskazany. Konsultuj z lekarzem.',
+    ingredients:[
+      {name:'Ryż biały',amount:'100g suchego',carbs:80},
+      {name:'Pierś kurczaka gotowana',amount:'150g',carbs:0},
+      {name:'Banan',amount:'1 szt.',carbs:20},
+      {name:'Miód',amount:'1 łyżeczka',carbs:5},
+    ],
+    steps:['Ugotuj ryż.','Pokrój kurczaka w paski.','Ułóż ryż, kurczaka i plasterki banana.','Skrop miodem.']
+  },
+  {
+    id:'r-t3', emoji:'🥚', name:'Omlet proteinowy po treningu', cat:'Po treningu',
+    photo:'https://images.unsplash.com/photo-1510693206972-df098062cb71?w=600&q=80',
+    time:10, servings:1, carbs:6, protein:28, fat:14, kcal:260, gi:'niski',
+    note:'Dla trenujących na czczo lub z niskim cukrem — dodaj węglowodany z owocem.',
+    ingredients:[
+      {name:'Jajka kurze',amount:'3 szt.',carbs:1},
+      {name:'Białko jaja',amount:'3 szt.',carbs:0},
+      {name:'Szpinak',amount:'50g',carbs:1},
+      {name:'Ser cheddar light',amount:'30g',carbs:0},
+      {name:'Pomidor',amount:'1 szt.',carbs:3},
+    ],
+    steps:['Ubij jajka i białka razem.','Dodaj szpinak i ser.','Smaż 3-4 minuty na patelni.','Podaj z pomidorem.']
+  },
+
+  // ═══════════════ DESERY ═══════════════
+  {
+    id:'r-d1', emoji:'🍫', name:'Brownie z fasoli czarnej', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
+    time:35, servings:8, carbs:18, protein:6, fat:7, kcal:165, gi:'niski',
+    note:'Fasola zamiast mąki — niższy IG, więcej błonnika i białka.',
+    ingredients:[
+      {name:'Fasola czarna puszka',amount:'400g',carbs:48},
       {name:'Kakao naturalne',amount:'3 łyżki',carbs:6},
-      {name:'Jajka kurze',amount:'3 szt.',carbs:0},
+      {name:'Jajka kurze',amount:'3 szt.',carbs:1},
       {name:'Miód',amount:'3 łyżki',carbs:45},
       {name:'Masło orzechowe',amount:'3 łyżki',carbs:9},
     ],
-    steps:['Rozgrzej piekarnik do 180C.','Zblenduj fasolę na gładką masę.','Wymieszaj ze wszystkimi składnikami.','Wlej do formy i piecz 25-30 minut.','Ostudź przed krojeniem.']
+    steps:['Rozgrzej piekarnik do 180°C.','Zblenduj fasolę na gładką masę.','Wymieszaj ze wszystkimi składnikami.','Piecz 25-28 minut. Ostudź przed krojeniem.']
   },
   {
-    id:'builtin-19', emoji:'🍰', name:'Sernik grecki bez pieczenia', cat:'Desery', photo:'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80',
-    time:20, servings:8, carbs:24, protein:9, fat:10, kcal:220,
+    id:'r-d2', emoji:'🧁', name:'Muffiny bananowe bez cukru', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1558303817-54ebae639b08?w=600&q=80',
+    time:30, servings:12, carbs:18, protein:4, fat:4, kcal:124, gi:'niski',
+    note:'Słodzone bananem — bez dodatku cukru. Dojrzały banan ma wyższy IG.',
+    ingredients:[
+      {name:'Banany bardzo dojrzałe',amount:'3 szt.',carbs:60},
+      {name:'Płatki owsiane',amount:'200g',carbs:120},
+      {name:'Jajka kurze',amount:'2 szt.',carbs:1},
+      {name:'Mleko 2%',amount:'100ml',carbs:5},
+      {name:'Cynamon',amount:'1 łyżeczka',carbs:0},
+    ],
+    steps:['Rozgrzej piekarnik do 175°C.','Banany rozgnieć widelcem.','Wymieszaj wszystko razem.','Rozłóż do 12 foremek, piecz 18-22 minuty.']
+  },
+  {
+    id:'r-d3', emoji:'🍮', name:'Chia pudding z mango', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=600&q=80',
+    time:5, servings:2, carbs:26, protein:8, fat:8, kcal:210, gi:'niski',
+    note:'Nasiona chia — błonnik obniżający IG całego posiłku.',
+    ingredients:[
+      {name:'Nasiona chia',amount:'40g',carbs:4},
+      {name:'Mleko migdałowe',amount:'300ml',carbs:3},
+      {name:'Jogurt grecki',amount:'100g',carbs:4},
+      {name:'Mango',amount:'1/2 szt.',carbs:18},
+      {name:'Miód',amount:'1 łyżka',carbs:8},
+    ],
+    steps:['Wymieszaj chia z mlekiem. Odstaw na 4h lub noc.','Wymieszaj z jogurtem.','Podaj z purée z mango i miodem.']
+  },
+  {
+    id:'r-d4', emoji:'🍰', name:'Sernik grecki bez pieczenia', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80',
+    time:20, servings:8, carbs:22, protein:10, fat:8, kcal:200, gi:'niski',
+    note:'Niższy IG niż tradycyjny sernik. Żelatyna zapobiega opóźnionemu wzrostowi glikemii.',
     ingredients:[
       {name:'Jogurt grecki 0%',amount:'500g',carbs:20},
       {name:'Twaróg chudy',amount:'250g',carbs:7},
       {name:'Żelatyna',amount:'3 łyżeczki',carbs:0},
       {name:'Miód',amount:'3 łyżki',carbs:45},
-      {name:'Sok z cytryny',amount:'2 łyżki',carbs:2},
-      {name:'Herbatniki owsiane (spód)',amount:'150g',carbs:90},
+      {name:'Herbatniki owsiane spód',amount:'150g',carbs:90},
       {name:'Masło',amount:'60g',carbs:0},
     ],
-    steps:['Herbatniki pokrusz i wymieszaj z roztopionym masłem, wyłóż formę.','Żelatynę namocz w zimnej wodzie, podgrzej do rozpuszczenia.','Wymieszaj jogurt, twaróg, miód i sok z cytryny.','Dodaj żelatynę, wymieszaj i wylej na spód.','Wstaw do lodówki na min. 4 godziny.','Podaj z owocami sezonowymi.']
+    steps:['Herbatniki rozkrusz, wymieszaj z masłem, wyłóż formę.','Żelatynę namocz, podgrzej do rozpuszczenia.','Wymieszaj jogurt, twaróg i miód. Dodaj żelatynę.','Wylej na spód, wstaw do lodówki na 4h.']
   },
   {
-    id:'builtin-20', emoji:'🧁', name:'Muffiny owsiane bananowe', cat:'Desery', photo:'https://images.unsplash.com/photo-1558303817-54ebae639b08?w=600&q=80',
-    time:30, servings:12, carbs:18, protein:4, fat:4, kcal:124,
-    ingredients:[
-      {name:'Banany (bardzo dojrzałe)',amount:'3 szt.',carbs:60},
-      {name:'Płatki owsiane',amount:'200g',carbs:120},
-      {name:'Jajka kurze',amount:'2 szt.',carbs:0},
-      {name:'Mleko 2%',amount:'100ml',carbs:5},
-      {name:'Cynamon',amount:'1 łyżeczka',carbs:0},
-      {name:'Rodzynki lub jagody',amount:'50g',carbs:38},
-    ],
-    steps:['Rozgrzej piekarnik do 175°C.','Banany rozgnieć widelcem na purée.','Wymieszaj wszystkie składniki w misce.','Rozłóż do 12 foremek muffinowych.','Piecz 18–22 minuty aż muffiny będą złote.','Studzić 10 minut przed wyjęciem z formy.']
-  },
-  {
-    id:'builtin-21', emoji:'🍮', name:'Panna cotta z mango', cat:'Desery', photo:'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80',
-    time:15, servings:4, carbs:20, protein:5, fat:8, kcal:172,
-    ingredients:[
-      {name:'Śmietanka 18%',amount:'400ml',carbs:12},
-      {name:'Żelatyna',amount:'2 łyżeczki',carbs:0},
-      {name:'Cukier',amount:'2 łyżki',carbs:24},
-      {name:'Ekstrakt waniliowy',amount:'1 łyżeczka',carbs:0},
-      {name:'Mango świeże',amount:'1 szt.',carbs:35},
-    ],
-    steps:['Żelatynę namocz w 3 łyżkach zimnej wody przez 5 minut.','Podgrzej śmietankę z cukrem i wanilią (nie gotuj!).','Dodaj żelatynę, mieszaj do rozpuszczenia.','Przelej do 4 pucharków, ostudź i wstaw do lodówki na min. 4h.','Mango zblenduj na mus, podaj jako sos na wierzchu.']
-  },
-  {
-    id:'builtin-22', emoji:'🍎', name:'Jabłka pieczone z cynamonem', cat:'Desery', photo:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&q=80',
-    time:25, servings:2, carbs:28, protein:1, fat:4, kcal:152,
+    id:'r-d5', emoji:'🍎', name:'Jabłka pieczone z cynamonem i orzechami', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&q=80',
+    time:25, servings:2, carbs:28, protein:2, fat:5, kcal:165, gi:'niski',
+    note:'Cynamon zmniejsza oporność insulinową — korzystny składnik diety T1.',
     ingredients:[
       {name:'Jabłka',amount:'2 duże',carbs:48},
       {name:'Cynamon',amount:'1 łyżeczka',carbs:0},
-      {name:'Orzechy włoskie',amount:'2 łyżki',carbs:2},
-      {name:'Masło',amount:'1 łyżka',carbs:0},
-      {name:'Miód',amount:'1 łyżka',carbs:15},
+      {name:'Orzechy włoskie',amount:'20g',carbs:1},
+      {name:'Miód',amount:'1 łyżeczka',carbs:5},
     ],
-    steps:['Rozgrzej piekarnik do 180°C.','Jabłka wydrąż, nie obieraj.','Wypełnij wydrążone miejsca orzechami, cynamonem i miodem.','Na wierzch połóż kawałek masła.','Piecz 20–25 minut aż jabłka będą miękkie.','Podaj ciepłe, opcjonalnie z jogurtem greckim.']
+    steps:['Rozgrzej piekarnik do 180°C.','Wydrąż jabłka, wypełnij orzechami i cynamonem.','Skrop miodem.','Piecz 20-25 minut.']
   },
   {
-    id:'builtin-23', emoji:'🍓', name:'Tarta z owocami (bez pieczenia)', cat:'Desery', photo:'https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=600&q=80',
-    time:20, servings:6, carbs:32, protein:7, fat:12, kcal:268,
+    id:'r-d6', emoji:'🍓', name:'Tarta owocowa bez pieczenia', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=600&q=80',
+    time:20, servings:8, carbs:28, protein:8, fat:10, kcal:235, gi:'niski',
+    note:'Daktyle i owies zamiast ciasta — błonnik i minerały.',
     ingredients:[
       {name:'Płatki owsiane',amount:'150g',carbs:90},
       {name:'Daktyle',amount:'100g',carbs:67},
       {name:'Twaróg sernikowy',amount:'300g',carbs:15},
       {name:'Jogurt grecki',amount:'150g',carbs:6},
-      {name:'Truskawki',amount:'200g',carbs:14},
-      {name:'Borówki',amount:'100g',carbs:12},
+      {name:'Truskawki i borówki',amount:'300g',carbs:26},
     ],
-    steps:['Daktyle i płatki zblenduj na lepką masę — to będzie spód.','Wyłóż masą formę (śr. 22cm), wyrównaj i wstaw do lodówki.','Wymieszaj twaróg z jogurtem greckim na krem.','Rozsmaruj krem na spodzie tarty.','Ułóż owoce artystycznie na wierzchu.','Schłodź min. 1h przed podaniem.']
+    steps:['Zblenduj daktyle z płatkami — lepka masa to spód.','Wyłóż masą formę, schłodź.','Wymieszaj twaróg z jogurtem.','Rozsmaruj krem, udekoruj owocami.']
+  },
+  {
+    id:'r-d7', emoji:'🍮', name:'Panna cotta waniliowa z truskawkami', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80',
+    time:15, servings:4, carbs:18, protein:5, fat:8, kcal:165, gi:'niski',
+    note:'Delikatny deser. Truskawki mają niski IG (~25).',
+    ingredients:[
+      {name:'Śmietanka 18%',amount:'400ml',carbs:12},
+      {name:'Żelatyna',amount:'2 łyżeczki',carbs:0},
+      {name:'Cukier erytrytol',amount:'2 łyżki',carbs:0},
+      {name:'Wanilia',amount:'1 łyżeczka',carbs:0},
+      {name:'Truskawki',amount:'200g',carbs:14},
+    ],
+    steps:['Żelatynę namocz w zimnej wodzie.','Podgrzej śmietankę z erytrytolем i wanilią.','Dodaj żelatynę, mieszaj do rozpuszczenia.','Przelej do pucharków. Chłodź 4h. Podaj z truskawkami.']
+  },
+  {
+    id:'r-d8', emoji:'🫐', name:'Placuszki twarogowe z jagodami', cat:'Desery',
+    photo:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80',
+    time:20, servings:2, carbs:32, protein:18, fat:6, kcal:255, gi:'niski',
+    note:'Twaróg dostarcza białka casein — długotrwała sytość.',
+    ingredients:[
+      {name:'Twaróg półtłusty',amount:'250g',carbs:6},
+      {name:'Jajka kurze',amount:'2 szt.',carbs:1},
+      {name:'Mąka pszenna',amount:'4 łyżki',carbs:24},
+      {name:'Jagody',amount:'100g',carbs:12},
+    ],
+    steps:['Wymieszaj twaróg z jajkami i mąką.','Wmieszaj jagody delikatnie.','Smaż placuszki 3 minuty z każdej strony.','Podaj z jogurtem naturalnym.']
+  },
+
+  // ═══════════════ ZUPY ═══════════════
+  {
+    id:'r-z1', emoji:'🥣', name:'Zupa krem z dyni i imbiru', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600&q=80',
+    time:35, servings:4, carbs:18, protein:3, fat:4, kcal:120, gi:'niski',
+    note:'Imbir i cynamon mają właściwości obniżające glikemię.',
+    ingredients:[
+      {name:'Dynia Hokkaido',amount:'800g',carbs:64},
+      {name:'Cebula',amount:'1 szt.',carbs:7},
+      {name:'Bulion warzywny',amount:'700ml',carbs:2},
+      {name:'Imbir świeży',amount:'2cm kawałek',carbs:2},
+      {name:'Mleko kokosowe light',amount:'100ml',carbs:3},
+    ],
+    steps:['Podsmaż cebulę z imbirem.','Dodaj dynię i bulion, gotuj 20 minut.','Zblenduj na krem.','Dodaj mleko kokosowe, dopraw.']
+  },
+  {
+    id:'r-z2', emoji:'🍅', name:'Zupa pomidorowa z soczewicą', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80',
+    time:30, servings:4, carbs:24, protein:10, fat:3, kcal:165, gi:'niski',
+    note:'Soczewica obniża IG całej zupy. Bogata w żelazo i kwas foliowy.',
+    ingredients:[
+      {name:'Pomidory krojone puszka',amount:'800g',carbs:28},
+      {name:'Soczewica czerwona',amount:'100g',carbs:52},
+      {name:'Cebula',amount:'1 szt.',carbs:7},
+      {name:'Czosnek',amount:'2 ząbki',carbs:2},
+      {name:'Bulion warzywny',amount:'500ml',carbs:2},
+      {name:'Bazylia',amount:'pęczek',carbs:0},
+    ],
+    steps:['Podsmaż cebulę z czosnkiem.','Dodaj pomidory, soczewicę i bulion.','Gotuj 20 minut do miękkości soczewicy.','Zblenduj częściowo, posyp bazylią.']
+  },
+  {
+    id:'r-z3', emoji:'🥬', name:'Barszcz czerwony z fasolą', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80',
+    time:40, servings:4, carbs:22, protein:8, fat:2, kcal:140, gi:'niski',
+    note:'Buraki mają umiarkowany IG (~64), ale dużo błonnika zwalnia wchłanianie.',
+    ingredients:[
+      {name:'Buraki',amount:'4 szt. (500g)',carbs:48},
+      {name:'Fasola biała puszka',amount:'400g',carbs:56},
+      {name:'Marchew',amount:'2 szt.',carbs:10},
+      {name:'Bulion warzywny',amount:'1l',carbs:2},
+      {name:'Ocet jabłkowy',amount:'1 łyżka',carbs:1},
+    ],
+    steps:['Ugotuj buraki i marchew.','Zetrzyj buraki na tarce.','Gotuj warzywa w bulionie 20 minut.','Dodaj fasolę i ocet. Dopraw.']
+  },
+  {
+    id:'r-z4', emoji:'🥦', name:'Rosół z kurczaka z wermiszelem razowym', cat:'Zupy',
+    photo:'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80',
+    time:90, servings:6, carbs:16, protein:18, fat:6, kcal:190, gi:'niski',
+    note:'Klasyczny rosół — bogaty w kolagen i elektrolity. Używaj makaronu razowego.',
+    ingredients:[
+      {name:'Kurczak (ćwiartki)',amount:'600g',carbs:0},
+      {name:'Marchew',amount:'3 szt.',carbs:15},
+      {name:'Seler',amount:'1/4 korzenia',carbs:3},
+      {name:'Por',amount:'1 szt.',carbs:5},
+      {name:'Wermiszel razowy',amount:'50g suchego',carbs:35},
+    ],
+    steps:['Zalewaj kurczaka zimną wodą, gotuj 90 minut.','Po godzinie dodaj warzywa.','Ugotuj makaron oddzielnie.','Podaj rosół z makaronem i posypaną natką.']
+  },
+
+  // ═══════════════ DODATKOWE ═══════════════
+  {
+    id:'r-x1', emoji:'🥬', name:'Sałatka z komosy ryżowej i warzyw', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1540914124281-342587941389?w=600&q=80',
+    time:20, servings:2, carbs:38, protein:12, fat:8, kcal:280, gi:'niski',
+    note:'Komosa ryżowa zawiera kompletne białko — wszystkie aminokwasy egzogenne.',
+    ingredients:[
+      {name:'Quinoa ugotowana',amount:'200g',carbs:36},
+      {name:'Ogórek',amount:'1 szt.',carbs:3},
+      {name:'Papryka żółta',amount:'1 szt.',carbs:6},
+      {name:'Cebula czerwona',amount:'1/4 szt.',carbs:2},
+      {name:'Natka pietruszki',amount:'pęczek',carbs:0},
+      {name:'Oliwa z oliwek',amount:'2 łyżki',carbs:0},
+    ],
+    steps:['Ugotuj quinoa, ostudź.','Pokrój ogórka, paprykę i cebulę.','Wymieszaj z quinoa i natką.','Skrop oliwą, dopraw solą i pieprzem.']
+  },
+  {
+    id:'r-x2', emoji:'🍄', name:'Pieczarki faszerowane szpinakiem i ricottą', cat:'Kolacje',
+    photo:'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=600&q=80',
+    time:25, servings:2, carbs:8, protein:16, fat:12, kcal:210, gi:'niski',
+    note:'Grzyby mają IG=10 — jeden z najniższych. Doskonały wybór dla T1.',
+    ingredients:[
+      {name:'Pieczarki duże',amount:'8 szt.',carbs:3},
+      {name:'Ricotta',amount:'150g',carbs:4},
+      {name:'Szpinak',amount:'100g',carbs:2},
+      {name:'Czosnek',amount:'2 ząbki',carbs:2},
+      {name:'Parmezan',amount:'30g',carbs:0},
+    ],
+    steps:['Rozgrzej piekarnik do 190°C.','Wydrąż pieczarki, posiekaj trzonki.','Podsmaż szpinak z czosnkiem i trzonkami.','Wymieszaj z ricottą, napełnij pieczarki.','Posyp parmezanem, piecz 15 minut.']
+  },
+  {
+    id:'r-x3', emoji:'🌮', name:'Tacos z mieloną wołowiną i salsą', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80',
+    time:25, servings:2, carbs:36, protein:28, fat:14, kcal:390, gi:'średni',
+    note:'Użyj małych tortilli kukurydzianych — niższy IG niż pszenne.',
+    ingredients:[
+      {name:'Tortille kukurydziane małe',amount:'4 szt.',carbs:40},
+      {name:'Mielona wołowina chuda',amount:'200g',carbs:0},
+      {name:'Pomidory',amount:'2 szt.',carbs:6},
+      {name:'Awokado',amount:'1 szt.',carbs:3},
+      {name:'Cebula czerwona',amount:'1/2 szt.',carbs:4},
+      {name:'Limonka',amount:'1 szt.',carbs:2},
+    ],
+    steps:['Smaż wołowinę z przyprawami taco.','Pokrój pomidory, cebulę i awokado. Skrop limonką.','Podgrzej tortille.','Napełnij mięsem i salsą.']
+  },
+  {
+    id:'r-x4', emoji:'🥜', name:'Kulki proteinowe daktylowo-orzechowe', cat:'Przekąski',
+    photo:'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=600&q=80',
+    time:15, servings:12, carbs:14, protein:4, fat:6, kcal:125, gi:'niski',
+    note:'Gotowe w 15 minut. Idealna przekąska przed treningiem.',
+    ingredients:[
+      {name:'Daktyle bez pestek',amount:'150g',carbs:100},
+      {name:'Orzechy nerkowca',amount:'100g',carbs:27},
+      {name:'Kakao naturalne',amount:'2 łyżki',carbs:4},
+      {name:'Wiórki kokosowe',amount:'2 łyżki',carbs:2},
+    ],
+    steps:['Zblenduj daktyle z orzechami i kakao.','Formuj kuleczki (ok. 12 szt.).','Obtocz w wiórkkach kokosowych.','Schłodź w lodówce 30 minut.']
+  },
+  {
+    id:'r-x5', emoji:'🫛', name:'Curry z soczewicą i szpinakiem', cat:'Obiady',
+    photo:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80',
+    time:30, servings:3, carbs:32, protein:16, fat:6, kcal:255, gi:'niski',
+    note:'Dhal — indyjska zupa-gulasz z soczewicy. Jedno z najlepszych dań dla T1.',
+    ingredients:[
+      {name:'Soczewica czerwona',amount:'150g',carbs:78},
+      {name:'Szpinak mrożony',amount:'200g',carbs:6},
+      {name:'Mleko kokosowe light',amount:'200ml',carbs:6},
+      {name:'Pomidory krojone puszka',amount:'400g',carbs:14},
+      {name:'Curry, kurkuma, czosnek',amount:'do smaku',carbs:2},
+    ],
+    steps:['Podsmaż czosnek z przyprawami.','Dodaj soczewicę i pomidory.','Wlej mleko kokosowe, duś 20 minut.','Dodaj szpinak, mieszaj aż zwiędnie.','Podaj z ryżem basmati.']
   },
 ];
 
