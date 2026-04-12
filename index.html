@@ -1841,6 +1841,7 @@ function calcFPU(){
 
   if((!protein && !fat) || protein<0 || fat<0){ res.classList.remove('visible'); return; }
   if(!icr){ res.classList.add('visible');
+    res.style.display='block';
     document.getElementById('fpu-dose').innerHTML='—<span>ustaw ICR w Profilu</span>';
     document.getElementById('fpu-duration').innerHTML='—<span>godzin</span>';
     document.getElementById('fpu-detail').textContent=''; return;
@@ -1856,6 +1857,7 @@ function calcFPU(){
 
   if(fpu < 1){
     res.classList.add('visible');
+    res.style.display='block';
     document.getElementById('fpu-dose').innerHTML=`0<span>jednostek</span>`;
     document.getElementById('fpu-duration').innerHTML=`—<span>godzin</span>`;
     document.getElementById('fpu-detail').textContent=`FPU = ${r1(fpu)} — poniżej 1 FPU, bolus przedłużony nie jest potrzebny.`;
@@ -1871,6 +1873,7 @@ function calcFPU(){
   const hours = fpuRound;
 
   res.classList.add('visible');
+  res.style.display='block';
   document.getElementById('fpu-dose').innerHTML=`${dose}<span>jednostek</span>`;
   document.getElementById('fpu-duration').innerHTML=`${hours}<span>godzin</span>`;
   document.getElementById('fpu-detail').textContent=
@@ -2131,7 +2134,7 @@ const BUILTIN_RECIPES = [
     steps:['Rozgrzej piekarnik do 200C.','Bataty pokrój w kostkę i przypraw.','Udka natrzyj przyprawami.','Piecz wszystko razem 40-45 minut.']
   },
   {
-    id:'builtin-15', emoji:'🫙', name:'Overnight oats z jabłkiem', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&q=80',
+    id:'builtin-15', emoji:'🫙', name:'Overnight oats z jabłkiem', cat:'Śniadania', photo:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=80',
     time:5, servings:1, carbs:48, protein:12, fat:8, kcal:315,
     ingredients:[
       {name:'Płatki owsiane',amount:'60g',carbs:36},
@@ -2179,19 +2182,19 @@ const BUILTIN_RECIPES = [
     ],
     steps:['Rozgrzej piekarnik do 180C.','Zblenduj fasolę na gładką masę.','Wymieszaj ze wszystkimi składnikami.','Wlej do formy i piecz 25-30 minut.','Ostudź przed krojeniem.']
   },
-
   {
-    id:'builtin-19', emoji:'🍫', name:'Brownie z fasoli czarnej', cat:'Desery', photo:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
-    time:35, servings:8, carbs:22, protein:6, fat:8, kcal:185,
+    id:'builtin-19', emoji:'🍰', name:'Sernik grecki bez pieczenia', cat:'Desery', photo:'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80',
+    time:20, servings:8, carbs:24, protein:9, fat:10, kcal:220,
     ingredients:[
-      {name:'Fasola czarna (puszka)',amount:'400g',carbs:48},
-      {name:'Kakao naturalne',amount:'3 łyżki',carbs:6},
-      {name:'Jajka kurze',amount:'3 szt.',carbs:0},
+      {name:'Jogurt grecki 0%',amount:'500g',carbs:20},
+      {name:'Twaróg chudy',amount:'250g',carbs:7},
+      {name:'Żelatyna',amount:'3 łyżeczki',carbs:0},
       {name:'Miód',amount:'3 łyżki',carbs:45},
-      {name:'Masło orzechowe',amount:'3 łyżki',carbs:9},
-      {name:'Proszek do pieczenia',amount:'1 łyżeczka',carbs:0},
+      {name:'Sok z cytryny',amount:'2 łyżki',carbs:2},
+      {name:'Herbatniki owsiane (spód)',amount:'150g',carbs:90},
+      {name:'Masło',amount:'60g',carbs:0},
     ],
-    steps:['Rozgrzej piekarnik do 180°C.','Zblenduj fasolę na gładką masę.','Wymieszaj ze wszystkimi składnikami.','Wlej do wyłożonej papierem formy 20×20cm.','Piecz 25–28 minut (patyczek powinien wychodzić suchy).','Ostudź przed krojeniem — brownie twardnieje po ostygnięciu.']
+    steps:['Herbatniki pokrusz i wymieszaj z roztopionym masłem, wyłóż formę.','Żelatynę namocz w zimnej wodzie, podgrzej do rozpuszczenia.','Wymieszaj jogurt, twaróg, miód i sok z cytryny.','Dodaj żelatynę, wymieszaj i wylej na spód.','Wstaw do lodówki na min. 4 godziny.','Podaj z owocami sezonowymi.']
   },
   {
     id:'builtin-20', emoji:'🧁', name:'Muffiny owsiane bananowe', cat:'Desery', photo:'https://images.unsplash.com/photo-1558303817-54ebae639b08?w=600&q=80',
