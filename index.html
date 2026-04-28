@@ -382,11 +382,10 @@
       transform:translateY(-2px);
     }
     .recipe-card-hero{
-      height:200px;display:flex;align-items:center;justify-content:center;
-      font-size:52px;background:var(--bg);overflow:hidden;position:relative;
+      height:160px;display:flex;align-items:center;justify-content:center;
+      font-size:72px;overflow:hidden;position:relative;
+      border-radius:16px 16px 0 0;
     }
-    .recipe-card-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .recipe-card-hero .hero-emoji{position:relative;z-index:1;font-size:52px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3))}
     .recipe-card-body{padding:16px 18px}
     .recipe-card-title{font-family:'Fraunces',serif;font-weight:600;font-size:16px;margin-bottom:5px;letter-spacing:-.2px}
     .recipe-card-meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
@@ -395,7 +394,7 @@
     .recipe-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
     .recipe-panel{display:none}.recipe-panel.active{display:block}
     .recipe-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px}
-    .recipe-detail-hero{font-size:52px;text-align:center;margin-bottom:12px;height:200px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;position:relative;background:var(--bg)}.recipe-detail-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.recipe-detail-hero .hero-emoji{position:relative;z-index:1;font-size:64px;filter:drop-shadow(0 2px 12px rgba(0,0,0,.4))}
+    .recipe-detail-hero{font-size:80px;text-align:center;margin-bottom:12px;height:180px;display:flex;align-items:center;justify-content:center;border-radius:16px;overflow:hidden;position:relative;}
     .recipe-detail-title{font-family:'Fraunces',serif;font-size:22px;margin-bottom:6px}
     .recipe-detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
     .recipe-ingredient{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px}
@@ -570,15 +569,28 @@
       <div class="bmi-labels"><span>Niedowaga</span><span>Norma</span><span>Nadwaga</span><span>Otyłość</span></div>
     </div>
     <div class="card">
-      <div class="card-title">💡 Szybki kalkulator</div>
-      <div class="card-desc">Podaj węglowodany, a obliczę dawkę insuliny.</div>
-      <div class="row"><div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="quick-carbs" placeholder="np. 60" min="0" oninput="quickCalc()"/></div></div>
+      <div class="card-title">💡 Szybki kalkulator insuliny</div>
+      <div class="card-desc">Wpisz makro posiłku — obliczę bolus natychmiastowy (węgl.) i przedłużony (białko+tłuszcz).</div>
+      <div class="row" style="margin-bottom:8px">
+        <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="quick-carbs" placeholder="np. 60" min="0" oninput="quickCalc()"/></div>
+        <div class="inline-field"><label>Białko <span class="unit">(g)</span></label><input type="number" id="quick-protein" placeholder="np. 20" min="0" oninput="quickCalc()"/></div>
+        <div class="inline-field"><label>Tłuszcz <span class="unit">(g)</span></label><input type="number" id="quick-fat" placeholder="np. 10" min="0" oninput="quickCalc()"/></div>
+      </div>
       <div class="calc-result" id="quick-result">
-        <div class="result-label">Sugerowana dawka</div>
-        <div class="result-dose" id="quick-dose">0<span>jednostek</span></div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+          <div>
+            <div class="result-label">Bolus natychmiastowy</div>
+            <div class="result-dose" id="quick-dose">—<span>j</span></div>
+          </div>
+          <div id="quick-fpu-wrap" style="display:none">
+            <div class="result-label" style="color:var(--orange)">Bolus przedłużony (FPU)</div>
+            <div class="result-dose" id="quick-fpu-dose" style="color:var(--orange)">—<span>j</span></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px" id="quick-fpu-time"></div>
+          </div>
+        </div>
         <div class="result-detail" id="quick-detail"></div>
       </div>
-      <div class="disclaimer"><strong>⚠️ Ważna informacja</strong>Wyniki to obliczenia matematyczne. Zawsze konsultuj dawkowanie z lekarzem.</div>
+      <div class="disclaimer"><strong>⚠️ Ważna informacja</strong>Wyniki to obliczenia matematyczne (Metoda Warszawska dla FPU). Zawsze konsultuj dawkowanie z lekarzem.</div>
     </div>
     <div class="card">
       <div class="card-title">📅 Dzisiaj</div>
@@ -633,14 +645,20 @@
 
       <!-- BOLUS -->
       <div class="calc-panel active" id="calc-bolus">
+        <div style="padding:10px 14px;background:var(--accent-lt);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;font-size:12.5px;color:var(--muted);line-height:1.5">
+          Wpisz <strong style="color:var(--text)">węglowodany</strong> na bolus natychmiastowy. Białko i tłuszcz — użyj zakładki <strong style="color:var(--text)">🥩 FPU</strong> lub <strong style="color:var(--text)">⚡ Łącznie</strong>.
+        </div>
         <div class="row" style="margin-bottom:10px">
           <div class="inline-field"><label>Węglowodany <span class="unit">(g)</span></label><input type="number" id="b-carbs" placeholder="np. 60" min="0" oninput="calcBolus()"/></div>
           <div class="inline-field"><label>ICR <span class="unit">(g/j)</span></label><input type="number" id="b-icr" placeholder="z profilu" min="1" oninput="calcBolus()"/></div>
         </div>
         <div class="calc-result" id="bolus-result">
-          <div class="result-label">Bolus posiłkowy (normalny)</div>
+          <div class="result-label">🍽️ Bolus natychmiastowy (węgle)</div>
           <div class="result-dose" id="bolus-dose">0<span>jednostek</span></div>
           <div class="result-detail" id="bolus-detail"></div>
+        </div>
+        <div style="margin-top:12px;padding:10px 13px;background:var(--orange-lt);border:1px solid var(--orange);border-radius:9px;font-size:12.5px;color:var(--orange)">
+          ⏳ Jeśli posiłek zawiera białko lub tłuszcz — przejdź do zakładki <strong>⚡ Łącznie</strong> by obliczyć pełną dawkę z FPU.
         </div>
       </div>
 
@@ -1969,13 +1987,42 @@ function calcCombined(){
 }
 
 function quickCalc(){
-  const carbs=parseFloat(document.getElementById('quick-carbs').value)||0, icr=userProfile.icr;
-  const res=document.getElementById('quick-result');
-  if(!carbs){res.classList.remove('visible');return;}
-  if(!icr){res.classList.add('visible');document.getElementById('quick-dose').innerHTML='—<span>ustaw ICR w Profilu</span>';document.getElementById('quick-detail').textContent='';return;}
-  const dose=r1(carbs/icr); res.classList.add('visible');
-  document.getElementById('quick-dose').innerHTML=`${dose}<span>jednostek</span>`;
-  document.getElementById('quick-detail').textContent=`${carbs}g ÷ ICR ${icr} = ${dose} j.`;
+  const carbs   = parseFloat(document.getElementById('quick-carbs').value)||0;
+  const protein = parseFloat(document.getElementById('quick-protein')?document.getElementById('quick-protein').value:0)||0;
+  const fat     = parseFloat(document.getElementById('quick-fat')?document.getElementById('quick-fat').value:0)||0;
+  const icr     = userProfile.icr;
+  const res     = document.getElementById('quick-result');
+  if(!carbs && !protein && !fat){ res.classList.remove('visible'); return; }
+  if(!icr){
+    res.classList.add('visible'); res.style.display='block';
+    document.getElementById('quick-dose').innerHTML='—<span>ustaw ICR w Profilu</span>';
+    document.getElementById('quick-detail').textContent=''; return;
+  }
+  // Bolus węglowodanowy
+  const carbDose = carbs>0 ? r1(carbs/icr) : 0;
+  // FPU (Metoda Warszawska)
+  const kcalFP  = protein*4 + fat*9;
+  const fpu     = kcalFP/100;
+  const fpuDose = fpu>=1 ? r1((fpu*10)/icr) : 0;
+  const fpuH    = fpu>=1 ? Math.min(5,Math.round(fpu)) : 0;
+  const total   = r1(carbDose+fpuDose);
+
+  res.classList.add('visible'); res.style.display='block';
+  document.getElementById('quick-dose').innerHTML=`${carbDose}<span>j</span>`;
+  const fw = document.getElementById('quick-fpu-wrap');
+  if(fw){
+    if(fpuDose>0){
+      fw.style.display='block';
+      document.getElementById('quick-fpu-dose').innerHTML=`${fpuDose}<span>j</span>`;
+      document.getElementById('quick-fpu-time').textContent=`przez ${fpuH}h (FPU=${r1(fpu)})`;
+    } else {
+      fw.style.display='none';
+    }
+  }
+  let det = carbs ? `Węgl: ${carbs}g ÷ ICR${icr}=${carbDose}j` : '';
+  if(fpuDose) det += ` | FPU: ${r1(kcalFP)}kcal → ${fpuDose}j przez ${fpuH}h`;
+  if(fpuDose) det += ` | Razem: ${total}j`;
+  document.getElementById('quick-detail').textContent = det;
 }
 
 // ── STATS ──
@@ -2033,7 +2080,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ ŚNIADANIA ═══════════════
   {
     id:'r-s1', emoji:'🥣', name:'Owsianka z jagodami i orzechami', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1571748982800-fa51082c2224?w=600&q=80',
     time:10, servings:1, carbs:48, protein:12, fat:10, kcal:330, gi:'niski',
     note:'Niski IG — powolny wzrost glikemii. Idealna na start dnia.',
     ingredients:[
@@ -2047,7 +2093,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s2', emoji:'🍳', name:'Jajecznica z avocado i pomidorami', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80',
     time:10, servings:1, carbs:6, protein:16, fat:22, kcal:290, gi:'niski',
     note:'Posiłek bogaty w tłuszcz i białko — wymaga bolusу FPU.',
     ingredients:[
@@ -2060,7 +2105,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s3', emoji:'🫙', name:'Overnight oats z malinami', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=80',
     time:5, servings:1, carbs:44, protein:14, fat:7, kcal:295, gi:'niski',
     note:'Przygotuj wieczorem. Niski IG dzięki fermentacji i błonnikowi.',
     ingredients:[
@@ -2074,7 +2118,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s4', emoji:'🥞', name:'Placki proteinowe z twarogu', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80',
     time:20, servings:2, carbs:22, protein:28, fat:8, kcal:275, gi:'niski',
     note:'Wysokie białko — uwzględnij FPU do obliczeń bolusu.',
     ingredients:[
@@ -2087,7 +2130,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s5', emoji:'🥑', name:'Tost razowy z łososiem i avocado', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80',
     time:10, servings:1, carbs:28, protein:22, fat:18, kcal:365, gi:'niski',
     note:'Nienasycone kwasy tłuszczowe omega-3 — korzystne dla serca.',
     ingredients:[
@@ -2101,7 +2143,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s6', emoji:'🍓', name:'Smoothie bowl z granolą', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=80',
     time:10, servings:1, carbs:42, protein:10, fat:6, kcal:265, gi:'średni',
     note:'Zamroź banana dzień wcześniej — bowl będzie gęsty jak lody.',
     ingredients:[
@@ -2115,7 +2156,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s7', emoji:'🍵', name:'Kasza jaglana z jabłkiem i cynamonem', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&q=80',
     time:20, servings:2, carbs:46, protein:6, fat:4, kcal:245, gi:'niski',
     note:'Kasza jaglana ma niższy IG niż ryż biały. Bogata w magnez.',
     ingredients:[
@@ -2129,7 +2169,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-s8', emoji:'🫔', name:'Shakshuka z fetą', cat:'Śniadania',
-    photo:'https://images.unsplash.com/photo-1590412200988-a436970781fa?w=600&q=80',
     time:25, servings:2, carbs:18, protein:18, fat:14, kcal:270, gi:'niski',
     note:'Bogata w białko i warzywa. Niski IG — stabilna glikemia.',
     ingredients:[
@@ -2146,7 +2185,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ OBIADY ═══════════════
   {
     id:'r-o1', emoji:'🍗', name:'Kurczak pieczony z warzywami', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80',
     time:45, servings:2, carbs:22, protein:42, fat:8, kcal:330, gi:'niski',
     note:'Wysoka zawartość białka — zastosuj bolus FPU. Idealny po treningu.',
     ingredients:[
@@ -2161,7 +2199,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o2', emoji:'🐟', name:'Łosoś z quinoa i szpinakiem', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80',
     time:25, servings:2, carbs:34, protein:38, fat:16, kcal:435, gi:'niski',
     note:'Omega-3 z łososia chroni układ sercowo-naczyniowy. Ważny składnik diety T1.',
     ingredients:[
@@ -2175,7 +2212,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o3', emoji:'🍝', name:'Makaron razowy z sosem bolońskim', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=600&q=80',
     time:35, servings:2, carbs:52, protein:28, fat:12, kcal:430, gi:'niski',
     note:'Makaron razowy ma niższy IG. Gotuj al dente — IG jeszcze niższy.',
     ingredients:[
@@ -2189,7 +2225,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o4', emoji:'🫕', name:'Quinoa bowl z ciecierzycą', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
     time:20, servings:2, carbs:48, protein:18, fat:10, kcal:360, gi:'niski',
     note:'Roślinne białko i błonnik — doskonała kombinacja dla T1.',
     ingredients:[
@@ -2204,7 +2239,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o5', emoji:'🥘', name:'Leczo warzywne z jajkiem', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=600&q=80',
     time:30, servings:2, carbs:20, protein:14, fat:8, kcal:210, gi:'niski',
     note:'Dieta śródziemnomorska — zalecana przez PTD i ADA.',
     ingredients:[
@@ -2218,7 +2252,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o6', emoji:'🍜', name:'Zupa soczewicowa z kurkumą', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=600&q=80',
     time:30, servings:4, carbs:28, protein:12, fat:4, kcal:200, gi:'niski',
     note:'Soczewica — wyjątkowo niski IG (~30). Bogata w białko roślinne.',
     ingredients:[
@@ -2233,7 +2266,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o7', emoji:'🫙', name:'Wrap z indykiem i warzywami', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&q=80',
     time:15, servings:1, carbs:38, protein:32, fat:8, kcal:360, gi:'średni',
     note:'Szybki posiłek po treningu. Indyk — chude białko.',
     ingredients:[
@@ -2248,7 +2280,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o8', emoji:'🐟', name:'Tuńczyk z ryżem brązowym i brokułami', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
     time:25, servings:2, carbs:46, protein:30, fat:6, kcal:360, gi:'niski',
     note:'Klasyczny posiłek sportowca. Ryż brązowy — niższy IG niż biały.',
     ingredients:[
@@ -2262,7 +2293,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o9', emoji:'🥗', name:'Sałatka nicejska z jajkiem', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80',
     time:15, servings:2, carbs:14, protein:24, fat:16, kcal:300, gi:'niski',
     note:'Klasyczna sałatka śródziemnomorska. Niska zawartość węglowodanów.',
     ingredients:[
@@ -2277,7 +2307,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o10', emoji:'🍲', name:'Zupa krem z brokułów', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80',
     time:25, servings:3, carbs:14, protein:6, fat:4, kcal:115, gi:'niski',
     note:'Brokuły zawierają chromium — pomaga w regulacji glikemii.',
     ingredients:[
@@ -2290,7 +2319,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o11', emoji:'🫕', name:'Poke bowl z łososiem', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80',
     time:20, servings:1, carbs:48, protein:32, fat:16, kcal:470, gi:'średni',
     note:'Wysoka zawartość omega-3. Pamiętaj o FPU od łososia i avocado.',
     ingredients:[
@@ -2305,7 +2333,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o12', emoji:'🍗', name:'Curry z kurczaka z ryżem basmati', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80',
     time:35, servings:3, carbs:42, protein:32, fat:10, kcal:390, gi:'niski',
     note:'Kurkuma i imbir mają właściwości przeciwzapalne.',
     ingredients:[
@@ -2320,7 +2347,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o13', emoji:'🍜', name:'Zupa miso z tofu', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
     time:15, servings:2, carbs:8, protein:14, fat:5, kcal:135, gi:'niski',
     note:'Lekka, rozgrzewająca. Tofu — roślinne białko o niskim IG.',
     ingredients:[
@@ -2334,7 +2360,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o14', emoji:'🥙', name:'Gyros z kurczaka z tzatziki', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1554931670-4ebfabf6e7a9?w=600&q=80',
     time:25, servings:2, carbs:44, protein:34, fat:10, kcal:410, gi:'średni',
     note:'Domowe tzatziki zamiast sosu majonezowego — zdrowsza alternatywa.',
     ingredients:[
@@ -2349,7 +2374,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-o15', emoji:'🍕', name:'Pizza na spodzie kalafiorowym', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&q=80',
     time:40, servings:2, carbs:20, protein:22, fat:14, kcal:295, gi:'niski',
     note:'Kalafior zamiast mąki — dramatycznie niższy IG. Sprytna alternatywa!',
     ingredients:[
@@ -2365,7 +2389,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ KOLACJE ═══════════════
   {
     id:'r-k1', emoji:'🥗', name:'Sałatka z pieczonym łososiem i rukolą', cat:'Kolacje',
-    photo:'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=600&q=80',
     time:20, servings:2, carbs:8, protein:28, fat:18, kcal:310, gi:'niski',
     note:'Lekka kolacja — niskie węglowodany, wysokie białko i zdrowe tłuszcze.',
     ingredients:[
@@ -2380,7 +2403,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-k2', emoji:'🥚', name:'Omlet z warzywami i fetą', cat:'Kolacje',
-    photo:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80',
     time:15, servings:1, carbs:8, protein:22, fat:16, kcal:265, gi:'niski',
     note:'Lekka kolacja. Białko i tłuszcz nasycają długo.',
     ingredients:[
@@ -2394,7 +2416,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-k3', emoji:'🍲', name:'Krem z dyni z pestkami', cat:'Kolacje',
-    photo:'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=600&q=80',
     time:30, servings:3, carbs:20, protein:4, fat:5, kcal:140, gi:'niski',
     note:'Dynia bogata w beta-karoten i błonnik. Sycąca zupa na kolację.',
     ingredients:[
@@ -2408,7 +2429,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-k4', emoji:'🐟', name:'Makrela z sałatką z ogórka', cat:'Kolacje',
-    photo:'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
     time:10, servings:1, carbs:6, protein:20, fat:18, kcal:265, gi:'niski',
     note:'Makrela — znakomite źródło omega-3. Szybka, zdrowa kolacja.',
     ingredients:[
@@ -2424,7 +2444,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ PRZEKĄSKI ═══════════════
   {
     id:'r-p1', emoji:'🥜', name:'Hummus z warzywami', cat:'Przekąski',
-    photo:'https://images.unsplash.com/photo-1544510806-801cd4b4b7d0?w=600&q=80',
     time:10, servings:4, carbs:18, protein:8, fat:8, kcal:178, gi:'niski',
     note:'Ciecierzyca — świetne źródło białka roślinnego. IG ~30.',
     ingredients:[
@@ -2439,7 +2458,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-p2', emoji:'🧀', name:'Twarożek z rzodkiewką i szczypiorkiem', cat:'Przekąski',
-    photo:'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=600&q=80',
     time:5, servings:2, carbs:4, protein:14, fat:2, kcal:90, gi:'niski',
     note:'Lekka przekąska bogata w białko. Idealna gdy cukier jest w normie.',
     ingredients:[
@@ -2452,7 +2470,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-p3', emoji:'🫐', name:'Jogurt grecki z orzechami', cat:'Przekąski',
-    photo:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80',
     time:3, servings:1, carbs:12, protein:14, fat:12, kcal:210, gi:'niski',
     note:'Białko + tłuszcze spowalniają wchłanianie węglowodanów.',
     ingredients:[
@@ -2467,7 +2484,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ PO TRENINGU ═══════════════
   {
     id:'r-t1', emoji:'💪', name:'Koktajl proteinowy po treningu', cat:'Po treningu',
-    photo:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&q=80',
     time:5, servings:1, carbs:38, protein:30, fat:4, kcal:305, gi:'wysoki',
     note:'Po treningu IG może być wyższy — mięśnie chłoną glukozę. Uzgodnij dawkę z lekarzem.',
     ingredients:[
@@ -2480,7 +2496,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-t2', emoji:'🍌', name:'Ryż z kurczakiem i bananem (pre-trening)', cat:'Po treningu',
-    photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
     time:20, servings:1, carbs:68, protein:34, fat:4, kcal:450, gi:'wysoki',
     note:'Przed intensywnym wysiłkiem — wyższy IG jest tu wskazany. Konsultuj z lekarzem.',
     ingredients:[
@@ -2493,7 +2508,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-t3', emoji:'🥚', name:'Omlet proteinowy po treningu', cat:'Po treningu',
-    photo:'https://images.unsplash.com/photo-1510693206972-df098062cb71?w=600&q=80',
     time:10, servings:1, carbs:6, protein:28, fat:14, kcal:260, gi:'niski',
     note:'Dla trenujących na czczo lub z niskim cukrem — dodaj węglowodany z owocem.',
     ingredients:[
@@ -2509,7 +2523,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ DESERY ═══════════════
   {
     id:'r-d1', emoji:'🍫', name:'Brownie z fasoli czarnej', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
     time:35, servings:8, carbs:18, protein:6, fat:7, kcal:165, gi:'niski',
     note:'Fasola zamiast mąki — niższy IG, więcej błonnika i białka.',
     ingredients:[
@@ -2523,7 +2536,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d2', emoji:'🧁', name:'Muffiny bananowe bez cukru', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1558303817-54ebae639b08?w=600&q=80',
     time:30, servings:12, carbs:18, protein:4, fat:4, kcal:124, gi:'niski',
     note:'Słodzone bananem — bez dodatku cukru. Dojrzały banan ma wyższy IG.',
     ingredients:[
@@ -2537,7 +2549,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d3', emoji:'🍮', name:'Chia pudding z mango', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=600&q=80',
     time:5, servings:2, carbs:26, protein:8, fat:8, kcal:210, gi:'niski',
     note:'Nasiona chia — błonnik obniżający IG całego posiłku.',
     ingredients:[
@@ -2551,7 +2562,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d4', emoji:'🍰', name:'Sernik grecki bez pieczenia', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80',
     time:20, servings:8, carbs:22, protein:10, fat:8, kcal:200, gi:'niski',
     note:'Niższy IG niż tradycyjny sernik. Żelatyna zapobiega opóźnionemu wzrostowi glikemii.',
     ingredients:[
@@ -2566,7 +2576,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d5', emoji:'🍎', name:'Jabłka pieczone z cynamonem i orzechami', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&q=80',
     time:25, servings:2, carbs:28, protein:2, fat:5, kcal:165, gi:'niski',
     note:'Cynamon zmniejsza oporność insulinową — korzystny składnik diety T1.',
     ingredients:[
@@ -2579,7 +2588,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d6', emoji:'🍓', name:'Tarta owocowa bez pieczenia', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=600&q=80',
     time:20, servings:8, carbs:28, protein:8, fat:10, kcal:235, gi:'niski',
     note:'Daktyle i owies zamiast ciasta — błonnik i minerały.',
     ingredients:[
@@ -2593,7 +2601,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d7', emoji:'🍮', name:'Panna cotta waniliowa z truskawkami', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80',
     time:15, servings:4, carbs:18, protein:5, fat:8, kcal:165, gi:'niski',
     note:'Delikatny deser. Truskawki mają niski IG (~25).',
     ingredients:[
@@ -2607,7 +2614,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-d8', emoji:'🫐', name:'Placuszki twarogowe z jagodami', cat:'Desery',
-    photo:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80',
     time:20, servings:2, carbs:32, protein:18, fat:6, kcal:255, gi:'niski',
     note:'Twaróg dostarcza białka casein — długotrwała sytość.',
     ingredients:[
@@ -2622,7 +2628,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ ZUPY ═══════════════
   {
     id:'r-z1', emoji:'🥣', name:'Zupa krem z dyni i imbiru', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600&q=80',
     time:35, servings:4, carbs:18, protein:3, fat:4, kcal:120, gi:'niski',
     note:'Imbir i cynamon mają właściwości obniżające glikemię.',
     ingredients:[
@@ -2636,7 +2641,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-z2', emoji:'🍅', name:'Zupa pomidorowa z soczewicą', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80',
     time:30, servings:4, carbs:24, protein:10, fat:3, kcal:165, gi:'niski',
     note:'Soczewica obniża IG całej zupy. Bogata w żelazo i kwas foliowy.',
     ingredients:[
@@ -2651,7 +2655,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-z3', emoji:'🥬', name:'Barszcz czerwony z fasolą', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80',
     time:40, servings:4, carbs:22, protein:8, fat:2, kcal:140, gi:'niski',
     note:'Buraki mają umiarkowany IG (~64), ale dużo błonnika zwalnia wchłanianie.',
     ingredients:[
@@ -2665,7 +2668,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-z4', emoji:'🥦', name:'Rosół z kurczaka z wermiszelem razowym', cat:'Zupy',
-    photo:'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80',
     time:90, servings:6, carbs:16, protein:18, fat:6, kcal:190, gi:'niski',
     note:'Klasyczny rosół — bogaty w kolagen i elektrolity. Używaj makaronu razowego.',
     ingredients:[
@@ -2681,7 +2683,6 @@ const BUILTIN_RECIPES = [
   // ═══════════════ DODATKOWE ═══════════════
   {
     id:'r-x1', emoji:'🥬', name:'Sałatka z komosy ryżowej i warzyw', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1540914124281-342587941389?w=600&q=80',
     time:20, servings:2, carbs:38, protein:12, fat:8, kcal:280, gi:'niski',
     note:'Komosa ryżowa zawiera kompletne białko — wszystkie aminokwasy egzogenne.',
     ingredients:[
@@ -2696,7 +2697,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-x2', emoji:'🍄', name:'Pieczarki faszerowane szpinakiem i ricottą', cat:'Kolacje',
-    photo:'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=600&q=80',
     time:25, servings:2, carbs:8, protein:16, fat:12, kcal:210, gi:'niski',
     note:'Grzyby mają IG=10 — jeden z najniższych. Doskonały wybór dla T1.',
     ingredients:[
@@ -2710,7 +2710,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-x3', emoji:'🌮', name:'Tacos z mieloną wołowiną i salsą', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80',
     time:25, servings:2, carbs:36, protein:28, fat:14, kcal:390, gi:'średni',
     note:'Użyj małych tortilli kukurydzianych — niższy IG niż pszenne.',
     ingredients:[
@@ -2725,7 +2724,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-x4', emoji:'🥜', name:'Kulki proteinowe daktylowo-orzechowe', cat:'Przekąski',
-    photo:'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=600&q=80',
     time:15, servings:12, carbs:14, protein:4, fat:6, kcal:125, gi:'niski',
     note:'Gotowe w 15 minut. Idealna przekąska przed treningiem.',
     ingredients:[
@@ -2738,7 +2736,6 @@ const BUILTIN_RECIPES = [
   },
   {
     id:'r-x5', emoji:'🫛', name:'Curry z soczewicą i szpinakiem', cat:'Obiady',
-    photo:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80',
     time:30, servings:3, carbs:32, protein:16, fat:6, kcal:255, gi:'niski',
     note:'Dhal — indyjska zupa-gulasz z soczewicy. Jedno z najlepszych dań dla T1.',
     ingredients:[
@@ -2814,19 +2811,40 @@ function renderMyRecipes(){
     : '<div style="color:var(--muted);font-size:13.5px;padding:8px">Nie masz jeszcze własnych przepisów. Dodaj w zakładce "Nowy przepis".</div>';
 }
 
+function catGradient(cat){
+  const g = {
+    'Śniadania':    'linear-gradient(135deg,#f6d365 0%,#fda085 100%)',
+    'Obiady':       'linear-gradient(135deg,#a8edea 0%,#fed6e3 100%)',
+    'Kolacje':      'linear-gradient(135deg,#d299c2 0%,#fef9d7 100%)',
+    'Zupy':         'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)',
+    'Przekąski':    'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)',
+    'Po treningu':  'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)',
+    'Desery':       'linear-gradient(135deg,#fa709a 0%,#fee140 100%)',
+    'Inne':         'linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)',
+  };
+  return g[cat] || 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)';
+}
+
 function recipeCardHTML(r){
   const icr = userProfile.icr;
   const dose = icr && r.carbs ? r1(r.carbs/icr) : null;
-  const heroImg = r.photo ? `<img src="${r.photo}" alt="" loading="lazy" onerror="this.style.display='none'"/>` : `<span style="font-size:52px">${r.emoji||'🍽️'}</span>`;
+  const bg = catGradient(r.cat);
   return `<div class="recipe-card" onclick="openRecipeDetail('${r.id}')">
-    <div class="recipe-card-hero">${heroImg}</div>
+    <div class="recipe-card-hero" style="background:${bg}"><span style="font-size:68px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.18))">${r.emoji||'🍽️'}</span></div>
     <div class="recipe-card-body">
       <div class="recipe-card-title">${esc(r.name)}</div>
       <div class="recipe-card-meta">
         ${r.time?`<span>⏱️ ${r.time} min</span>`:''}
         <span>👤 ${r.servings||1} porcj${r.servings===1?'a':'e'}</span>
         <span style="color:var(--accent);font-weight:600">${r.carbs}g węgl.</span>
-        ${dose!==null?`<span style="color:var(--accent)">→ ${dose}j insuliny</span>`:''}
+        ${(()=>{
+          if(!icr) return '';
+          const cd=r.carbs?r1(r.carbs/icr):0;
+          const fp=((r.protein||0)*4+(r.fat||0)*9)/100;
+          const fd=fp>=1?r1((fp*10)/icr):0;
+          const tot=r1(cd+fd);
+          return `<span style="color:var(--accent)">→ ${tot}j${fd>0?' ('+cd+'+'+fd+'j FPU)':''}</span>`;
+        })()}
       </div>
       <div class="macro-row">
         <span class="macro-pill macro-carbs">W: ${r.carbs}g</span>
@@ -2850,7 +2868,7 @@ function openRecipeDetail(id){
       <button class="btn btn-secondary btn-sm" onclick="closeRecipeDetail()">← Wróć</button>
       <button class="btn btn-primary btn-sm" onclick="addRecipeToPlan('${recipe.id}')">+ Dodaj do planu</button>
     </div>
-    <div class="recipe-detail-hero" style="margin-top:12px">${recipe.photo?'<img src="'+recipe.photo+'" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>':'<span style="font-size:64px">'+recipe.emoji+'</span>'}</div>
+    <div class="recipe-detail-hero" style="margin-top:12px;background:${catGradient(recipe.cat)}"><span style="font-size:80px;filter:drop-shadow(0 2px 12px rgba(0,0,0,.2))">${recipe.emoji||'🍽️'}</span></div>
     <div class="recipe-detail-title">${esc(recipe.name)}</div>
     <div class="recipe-detail-badges">
       <span class="badge badge-green">${recipe.cat}</span>
@@ -2866,10 +2884,35 @@ function openRecipeDetail(id){
     <div class="recipe-macro-box"><div class="recipe-macro-val" style="color:var(--green)">${recipe.kcal||'—'}</div><div class="recipe-macro-lbl">Kcal</div></div>
   </div>`;
 
-  if(dose !== null){
-    html += `<div style="padding:12px 14px;background:var(--accent-lt);border:1.5px solid #e8c4bb;border-radius:10px;margin-bottom:14px;font-size:13.5px">
-      💉 Sugerowana dawka insuliny: <strong style="font-size:18px;color:var(--accent)">${dose} j.</strong>
-      <span style="color:var(--muted);font-size:12px;display:block;margin-top:2px">Na podstawie ${recipe.carbs}g węgl. ÷ ICR ${icr}</span>
+  if(icr){
+    const carbDose = recipe.carbs ? r1(recipe.carbs/icr) : 0;
+    const kcalFP   = ((recipe.protein||0)*4) + ((recipe.fat||0)*9);
+    const fpu      = kcalFP/100;
+    const fpuDose  = fpu>=1 ? r1((fpu*10)/icr) : 0;
+    const fpuH     = fpu>=1 ? Math.min(5,Math.round(fpu)) : 0;
+    const total    = r1(carbDose + fpuDose);
+    html += `<div style="background:var(--accent-lt);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px">💉 Insulina dla tej porcji</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px;background:var(--surface);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">🍽️ Bolus natychmiastowy</div>
+          <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--accent)">${carbDose}<span style="font-size:14px;font-family:inherit;color:var(--muted);margin-left:3px">j</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${recipe.carbs}g węgl. ÷ ICR ${icr}</div>
+        </div>
+        ${fpuDose>0?`<div style="flex:1;min-width:120px;background:var(--surface);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">⏳ Bolus przedłużony (FPU)</div>
+          <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--orange)">${fpuDose}<span style="font-size:14px;font-family:inherit;color:var(--muted);margin-left:3px">j</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">przez ${fpuH}h — FPU: ${r1(fpu)}</div>
+        </div>`:''}
+        <div style="flex:1;min-width:120px;background:linear-gradient(135deg,var(--accent-lt),var(--blue-lt));border-radius:10px;padding:12px;border:1.5px solid var(--border)">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">⚡ Razem</div>
+          <div style="font-family:'Fraunces',serif;font-size:28px;color:var(--text)">${total}<span style="font-size:14px;font-family:inherit;color:var(--muted);margin-left:3px">j</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${fpuDose>0?`${carbDose}j + ${fpuDose}j FPU`:'tylko bolus węgl.'}</div>
+        </div>
+      </div>
+      ${fpuDose>0?`<div style="margin-top:10px;font-size:11.5px;color:var(--muted);padding:8px 12px;background:var(--orange-lt);border-radius:8px">
+        ℹ️ Bolus przedłużony podaj przez ${fpuH}h (biał.: ${recipe.protein||0}g × 4 = ${(recipe.protein||0)*4} kcal, tłuszcz: ${recipe.fat||0}g × 9 = ${(recipe.fat||0)*9} kcal → ${r1(kcalFP)} kcal = ${r1(fpu)} FPU)
+      </div>`:''}
     </div>`;
   }
 
