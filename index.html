@@ -482,26 +482,29 @@
     .profile-section{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 6px;grid-column:1/-1;padding-bottom:6px;border-bottom:1px solid var(--border)}
 
     /* RECIPES */
-    .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+    .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;margin-bottom:14px;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;background:var(--border)}
     .recipe-card{
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:var(--radius-md);overflow:hidden;cursor:pointer;
-      transition:box-shadow .15s,transform .15s;
+      background:var(--surface);cursor:pointer;
+      transition:background .12s;
+      display:flex;align-items:center;gap:14px;
+      padding:14px 16px;
     }
-    .recipe-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+    .recipe-card:hover{background:var(--surface2)}
     .recipe-card-hero{
-      height:120px;display:flex;align-items:center;justify-content:center;
-      font-size:56px;overflow:hidden;position:relative;
+      width:44px;height:44px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-size:28px;border-radius:var(--radius);
+      background:var(--surface2);
     }
-    .recipe-card-body{padding:12px 14px}
-    .recipe-card-title{font-family:'Lora',serif;font-weight:600;font-size:14.5px;margin-bottom:4px;letter-spacing:-.1px}
-    .recipe-card-meta{font-size:11.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+    .recipe-card-body{flex:1;min-width:0;padding:0}
+    .recipe-card-title{font-weight:500;font-size:14px;margin-bottom:2px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .recipe-card-meta{font-size:11.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0}
     .recipe-tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--radius-md);padding:3px;margin-bottom:18px}
     .recipe-tab{flex:1;padding:7px 5px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12.5px;font-weight:400;color:var(--muted);cursor:pointer;transition:all .12s}
     .recipe-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08);font-weight:500}
     .recipe-panel{display:none}.recipe-panel.active{display:block}
     .recipe-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin-bottom:14px}
-    .recipe-detail-hero{text-align:center;margin-bottom:14px;height:140px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);overflow:hidden;position:relative}
+    .recipe-detail-hero{text-align:center;margin-bottom:16px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);overflow:hidden;position:relative;font-size:48px}
     .recipe-detail-title{font-family:'Lora',serif;font-size:20px;font-weight:600;margin-bottom:6px;letter-spacing:-.3px}
     .recipe-detail-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
     .recipe-ingredient{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px}
@@ -518,9 +521,9 @@
     .recipe-macro-val{font-family:'Lora',serif;font-size:18px;font-weight:600;letter-spacing:-.2px}
     .recipe-macro-lbl{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;font-weight:500}
     .recipe-search-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-    .recipe-cat-filter{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
-    .recipe-cat-btn{padding:4px 12px;border:1px solid var(--border2);border-radius:20px;background:transparent;font-family:inherit;font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap;flex-shrink:0}
-    .recipe-cat-btn.active{background:var(--text);border-color:var(--text);color:var(--bg)}
+    .recipe-cat-filter{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
+    .recipe-cat-btn{padding:3px 10px;border:1px solid var(--border);border-radius:4px;background:transparent;font-family:inherit;font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap;flex-shrink:0}
+    .recipe-cat-btn.active{background:var(--surface2);border-color:var(--border2);color:var(--text);font-weight:500}
     .ingredient-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px}
     .ingredient-row .inline-field{flex:1}
     .step-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
@@ -1040,19 +1043,23 @@
   </div>
   <!-- ── PRZEPISY ── -->
   <div class="screen" id="screen-recipes">
-    <div class="recipe-tabs">
-      <button class="recipe-tab active" id="rtab-browse" onclick="switchRecipeTab('browse')">🔍 Przeglądaj</button>
-      <button class="recipe-tab" id="rtab-mine" onclick="switchRecipeTab('mine')">⭐ Moje</button>
-      <button class="recipe-tab" id="rtab-add" onclick="switchRecipeTab('add')">➕ Nowy przepis</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0">
+      <div style="display:flex;gap:0">
+        <button class="recipe-tab active" id="rtab-browse" onclick="switchRecipeTab('browse')" style="border-bottom:2px solid transparent;border-radius:0;padding:8px 16px;font-size:13.5px">Przeglądaj</button>
+        <button class="recipe-tab" id="rtab-mine" onclick="switchRecipeTab('mine')" style="border-bottom:2px solid transparent;border-radius:0;padding:8px 16px;font-size:13.5px">Moje przepisy</button>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="switchRecipeTab('add')" id="rtab-add" style="margin-bottom:6px">+ Nowy przepis</button>
     </div>
 
     <!-- BROWSE -->
     <div class="recipe-panel active" id="rpanel-browse">
-      <div class="recipe-cat-filter" id="recipe-cat-filter"></div>
-      <div class="search-wrap" style="margin-bottom:14px">
-        <span class="search-ico">🔍</span>
-        <input class="search-input" id="recipe-search" type="text" placeholder="Szukaj przepisu…" oninput="filterRecipes(this.value)"/>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="search-wrap" style="flex:1;min-width:180px;margin-bottom:0">
+          <span class="search-ico">🔍</span>
+          <input class="search-input" id="recipe-search" type="text" placeholder="Szukaj przepisu…" oninput="filterRecipes(this.value)"/>
+        </div>
       </div>
+      <div class="recipe-cat-filter" id="recipe-cat-filter"></div>
       <div id="recipe-grid-browse" class="recipes-grid"></div>
     </div>
 
@@ -2950,32 +2957,32 @@ function catGradient(cat){
   return g[cat] || 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)';
 }
 
+function catColor(cat){
+  const m={
+    'Śniadania':'#fef9c3','Obiady':'#dbeafe','Kolacje':'#e0e7ff',
+    'Zupy':'#fce7f3','Przekąski':'#dcfce7','Po treningu':'#d1fae5',
+    'Desery':'#ffe4e6','Inne':'#f3f4f6'
+  };
+  return m[cat]||'#f3f4f6';
+}
+
 function recipeCardHTML(r){
   const icr = userProfile.icr;
-  const dose = icr && r.carbs ? r1(r.carbs/icr) : null;
-  const bg = catGradient(r.cat);
+  const carbDose = icr && r.carbs ? r1(r.carbs/icr) : null;
+  const kcalFP = ((r.protein||0)*4)+((r.fat||0)*9);
+  const fpu = kcalFP/100;
+  const fpuDose = icr && fpu>=1 ? r1((fpu*10)/icr) : 0;
+  const totalDose = carbDose !== null ? r1(carbDose + fpuDose) : null;
+  const bg = catColor(r.cat);
   return `<div class="recipe-card" onclick="openRecipeDetail('${r.id}')">
-    <div class="recipe-card-hero" style="background:${bg}"><span style="font-size:68px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.18))">${r.emoji||'🍽️'}</span></div>
+    <div class="recipe-card-hero" style="background:${bg}">${r.emoji||'🍽️'}</div>
     <div class="recipe-card-body">
       <div class="recipe-card-title">${esc(r.name)}</div>
       <div class="recipe-card-meta">
-        ${r.time?`<span>⏱️ ${r.time} min</span>`:''}
-        <span>👤 ${r.servings||1} porcj${r.servings===1?'a':'e'}</span>
-        <span style="color:var(--accent);font-weight:600">${r.carbs}g węgl.</span>
-        ${(()=>{
-          if(!icr) return '';
-          const cd=r.carbs?r1(r.carbs/icr):0;
-          const fp=((r.protein||0)*4+(r.fat||0)*9)/100;
-          const fd=fp>=1?r1((fp*10)/icr):0;
-          const tot=r1(cd+fd);
-          return `<span style="color:var(--accent)">→ ${tot}j${fd>0?' ('+cd+'+'+fd+'j FPU)':''}</span>`;
-        })()}
-      </div>
-      <div class="macro-row">
-        <span class="macro-pill macro-carbs">W: ${r.carbs}g</span>
-        ${r.protein?`<span class="macro-pill macro-protein">B: ${r.protein}g</span>`:''}
-        ${r.fat?`<span class="macro-pill macro-fat">T: ${r.fat}g</span>`:''}
-        ${r.kcal?`<span class="macro-pill macro-kcal">${r.kcal} kcal</span>`:''}
+        ${r.cat?`<span style="color:var(--muted)">${r.cat}</span><span style="color:var(--border2)">·</span>`:''}
+        ${r.time?`<span>${r.time} min</span><span style="color:var(--border2)">·</span>`:''}
+        <span style="font-weight:500;color:var(--text)">${r.carbs}g węgl.</span>
+        ${totalDose!==null?`<span style="color:var(--accent)">→ ${totalDose}j</span>`:''}
       </div>
     </div>
   </div>`;
@@ -2993,7 +3000,7 @@ function openRecipeDetail(id){
       <button class="btn btn-secondary btn-sm" onclick="closeRecipeDetail()">← Wróć</button>
       <button class="btn btn-primary btn-sm" onclick="addRecipeToPlan('${recipe.id}')">+ Dodaj do planu</button>
     </div>
-    <div class="recipe-detail-hero" style="margin-top:12px;background:${catGradient(recipe.cat)}"><span style="font-size:80px;filter:drop-shadow(0 2px 12px rgba(0,0,0,.2))">${recipe.emoji||'🍽️'}</span></div>
+    <div class="recipe-detail-hero" style="margin-top:12px;background:${catColor(recipe.cat)};border:1px solid var(--border)">${recipe.emoji||'🍽️'}</div>
     <div class="recipe-detail-title">${esc(recipe.name)}</div>
     <div class="recipe-detail-badges">
       <span class="badge badge-green">${recipe.cat}</span>
@@ -3227,10 +3234,22 @@ async function saveNewRecipe(){
 }
 
 function switchRecipeTab(tab){
-  document.querySelectorAll('.recipe-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.recipe-tab').forEach(b=>{
+    b.classList.remove('active');
+    b.style.borderBottomColor='transparent';
+    b.style.color='';
+    b.style.fontWeight='';
+  });
   document.querySelectorAll('.recipe-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('rtab-'+tab).classList.add('active');
-  document.getElementById('rpanel-'+tab).classList.add('active');
+  const activeBtn = document.getElementById('rtab-'+tab);
+  if(activeBtn){
+    activeBtn.classList.add('active');
+    activeBtn.style.borderBottomColor='var(--text)';
+    activeBtn.style.color='var(--text)';
+    activeBtn.style.fontWeight='600';
+  }
+  const panel = document.getElementById('rpanel-'+tab);
+  if(panel) panel.classList.add('active');
   if(tab==='mine') renderMyRecipes();
   if(tab==='add') initAddRecipeForm();
 }
